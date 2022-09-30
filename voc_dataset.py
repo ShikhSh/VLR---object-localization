@@ -15,7 +15,7 @@ import torchvision.transforms as transforms
 
 def collate_fn(batch):
     return (
-      torch.stack([b['image'] for b in batch]),
+      torch.stack([b['image'] for b in batch], dim = 2),
       torch.stack([b['label'] for b in batch]),
       torch.stack([b['wgt'] for b in batch]),
       torch.stack([b['rois'].squeeze() for b in batch]),
@@ -53,7 +53,7 @@ class VOCDataset(Dataset):
         self.img_dir = os.path.join(data_dir, 'JPEGImages')
         self.ann_dir = os.path.join(data_dir, 'Annotations')
         self.selective_search_dir = os.path.join(
-            data_dir, 'selective_search_data')
+            data_dir, 'f1')#'selective_search_data')
         self.roi_data = scipy.io.loadmat(
             self.selective_search_dir + '/voc_2007_' + split + '.mat')
 

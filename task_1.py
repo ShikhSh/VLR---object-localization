@@ -123,7 +123,7 @@ parser.add_argument('--vis', action='store_true')
 
 best_prec1 = 0
 
-data_directory = '../VOCdevkit/VOC2007/'
+data_directory = './VOCdevkit/VOC2007/'
 
 def set_up_wandb():
     if USE_WANDB:
@@ -248,7 +248,14 @@ def train(train_loader, model, criterion, optimizer, epoch):
     end = time.time()
     for i, (data) in enumerate(train_loader):
         # measure data loading time
-        images, target = data
+        # print(data[0][0])
+        # print(data[1][0])
+        # print(data[2][0])
+        # print(data[3][0])
+        # print(data[4][0])
+        # print(data[5][0])
+        images = data[0]
+        target = data[1]
         
         data_time.update(time.time() - end)
         images = images.to(device)
@@ -314,7 +321,9 @@ def validate(val_loader, model, criterion, epoch=0):
     end = time.time()
     for i, (data) in enumerate(val_loader):
         # print(data)
-        images, target = images.to(device)
+        images = data[0]
+        target = data[1]
+        images = images.to(device)
         # TODO (Q1.1): Get inputs from the data dict
         # Convert inputs to cuda if training on GPU
         target = target.to(device)

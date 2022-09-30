@@ -12,21 +12,21 @@ class LocalizerAlexNet(nn.Module):
         super(LocalizerAlexNet, self).__init__()
         self.features = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=(11, 11), stride=(4, 4), padding=(2, 2)),
-            nn.ReLU(),
+            nn.ReLU(),#(inplace=True),
             nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), dilation=(1, 1), ceil_mode=False),
 
             nn.Conv2d(64, 192, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2)),
-            nn.ReLU(),
+            nn.ReLU(),#(inplace=True),
             nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), dilation=(1, 1), ceil_mode=False),
 
             nn.Conv2d(192, 384, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
-            nn.ReLU(),
+            nn.ReLU(),#(inplace=True),
 
             nn.Conv2d(384, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
-            nn.ReLU(),
+            nn.ReLU(),#(inplace=True),
 
             nn.Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
-            nn.ReLU()
+            nn.ReLU(),#(inplace=True)
         )
 
         self.classifier = nn.Sequential(
@@ -78,11 +78,15 @@ def localizer_alexnet(pretrained=False, **kwargs):
     # TODO (Q1.3): Initialize weights based on whether it is pretrained or not
     if pretrained:
         alex_net_pretrained = models.alexnet(pretrained = True)
-        for i in range(0,5):#:
-            model.features[i].weight.copy_(alex_net_pretrained.layer[i].weight)
-            model.features[i].bias.copy_(alex_net_pretrained.layer[i].bias)
+        for i in [0, 3, 6, 8, 10]:#:
+            # model.features[i].weight.copy_(alex_net_pretrained.features[i].weight)
+            # model.features[i].bias.copy_(alex_net_pretrained.features[i].bias)
+            model.features[i].load_state_dict(alex_net_pretrained.features[i].state_dict())
         # model.features.load_state_dict(alex_net_pretrained.state_dict())
-    
+        print(alex_net_pretrained.features.state_dict().keys())
+        print(model.features.state_dict().keys())
+        print("+++++++++")
+        # model.features.load_state_dict(alex_net_pretrained.state_dict())
 
     return model
 
