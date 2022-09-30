@@ -19,9 +19,9 @@ import torchvision.datasets as datasets
 import torchvision.models as models
 import wandb
 
-# from AlexNet import localizer_alexnet, localizer_alexnet_robust
-# from voc_dataset import *
-# from utils import *
+from AlexNet import localizer_alexnet, localizer_alexnet_robust
+from voc_dataset import *
+from utils import *
 
 USE_WANDB = False  # use flags, wandb is not convenient for debugging
 model_names = sorted(name for name in models.__dict__
