@@ -78,7 +78,10 @@ def localizer_alexnet(pretrained=False, **kwargs):
     # TODO (Q1.3): Initialize weights based on whether it is pretrained or not
     if pretrained:
         alex_net_pretrained = models.alexnet(pretrained = True)
-        model.features.load_state_dict(alex_net_pretrained.state_dict())
+        for i in range(0,5):#:
+            model.features[i].weight.copy_(alex_net_pretrained.layer[i].weight)
+            model.features[i].bias.copy_(alex_net_pretrained.layer[i].bias)
+        # model.features.load_state_dict(alex_net_pretrained.state_dict())
     
 
     return model
