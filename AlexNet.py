@@ -43,7 +43,7 @@ class LocalizerAlexNet(nn.Module):
         if isinstance(l, nn.Conv2d):
             nn.init.xavier_uniform(l.weight)
             # torch.nn.init.kaiming_uniform(m.weight)
-            l.bias.data.fill_(0.01)
+            l.bias.data.fill_(0.00)
 
 
     def forward(self, x):

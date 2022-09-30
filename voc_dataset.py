@@ -15,7 +15,7 @@ import torchvision.transforms as transforms
 
 def collate_fn(batch):
     return (
-      torch.stack([b['image'] for b in batch], dim = 2),
+      torch.stack([b['image'] for b in batch], dim = 0),
       torch.stack([b['label'] for b in batch]),
       torch.stack([b['wgt'] for b in batch]),
       torch.stack([b['rois'].squeeze() for b in batch]),
