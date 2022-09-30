@@ -19,9 +19,9 @@ import torchvision.datasets as datasets
 import torchvision.models as models
 import wandb
 
-from AlexNet import localizer_alexnet, localizer_alexnet_robust
-from voc_dataset import *
-from utils import *
+# from AlexNet import localizer_alexnet, localizer_alexnet_robust
+# from voc_dataset import *
+# from utils import *
 
 USE_WANDB = False  # use flags, wandb is not convenient for debugging
 model_names = sorted(name for name in models.__dict__
@@ -124,6 +124,10 @@ def main():
     args = parser.parse_args()
     args.distributed = args.world_size > 1
 
+    device = torch.device('cpu')
+    if torch.cuda.is_available():
+        device = torch.device("cuda")
+
     # create model
     print("=> creating model '{}'".format(args.arch))
     if args.arch == 'localizer_alexnet':
@@ -137,8 +141,9 @@ def main():
 
     # TODO (Q1.1): define loss function (criterion) and optimizer from [1]
     # also use an LR scheduler to decay LR by 10 every 30 epochs
-    criterion = None
-    optimizer = None
+    criterion = nn.BCELoss().to(device)
+    optimizer = torch.optim.SGD(model.parameters(), lr = args.lr, momentum = args.momentum, weight_decay = args.wd, nesterov = True)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size = 10, gamma = 0.1)
 
 
     # optionally resume from a checkpoint
@@ -163,9 +168,9 @@ def main():
     # Ensure that the sizes are 512x512
     # Also ensure that data directories are correct
     # The ones use for testing by TAs might be different
-    train_dataset = None
-    val_dataset = None
-    train_sampler = None
+    train_dataset = VOCDataset(split='trainval', data_dir='VOCdevkit/VOC2007/')
+    val_dataset = VOCDataset(split='test', data_dir='VOCdevkit/VOC2007/')
+    train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
 
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
@@ -287,7 +292,7 @@ def validate(val_loader, model, criterion, epoch=0):
 
     end = time.time()
     for i, (data) in enumerate(val_loader):
-
+        print(data)
         # TODO (Q1.1): Get inputs from the data dict
         # Convert inputs to cuda if training on GPU
         target = None

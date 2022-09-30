@@ -51,6 +51,10 @@ class VOCDataset(Dataset):
 
         self.anno_list = self.preload_anno()
 
+        # print("+++++++++++++")
+        # print(self.roi_data)
+        # print("+++++++++++++")
+
     @classmethod
     def get_class_name(cls, index):
         """
@@ -160,8 +164,20 @@ class VOCDataset(Dataset):
             3. Make sure to return only the top_n proposals based on proposal confidence ("boxScores")!
             4. You may have to write a custom collate_fn since some of the attributes below may be variable in number for each data point
         """
-        proposals = None
+        box_scores = self.roi_data['boxScores'][0][index]
+        boxes = self.roi_data['boxes'][0][index]
+        images = self.roi_data['images'][0][index]
+        
+        normalization_matrix = np.array([height, width, height, width])
+        boxes = boxes/normalization_matrix
 
+        sorted_indices = np.argsort(box_scores, axis = 0)
+        box_scores = box_scores[sorted_indices]
+        boxes = boxes[sorted_indices]
+
+        proposals = boxes[-self.top_n:]#None
+        # print(sorted_indices)
+        # print(box_scores)
 
         ret = {}
         ret['image'] = img
