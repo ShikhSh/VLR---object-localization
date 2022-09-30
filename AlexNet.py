@@ -37,6 +37,14 @@ class LocalizerAlexNet(nn.Module):
             nn.Conv2d(256, 20, kernel_size=(1, 1), stride=(1, 1))
         )
 
+        self.classifier.apply(self.initialize_sequential)
+    
+    def initialize_sequential(self, l):
+        if isinstance(l, nn.Conv2d):
+            nn.init.xavier_uniform(l.weight)
+            # torch.nn.init.kaiming_uniform(m.weight)
+            l.bias.data.fill_(0.01)
+
 
     def forward(self, x):
         # TODO (Q1.1): Define forward pass
@@ -68,6 +76,10 @@ def localizer_alexnet(pretrained=False, **kwargs):
     """
     model = LocalizerAlexNet(**kwargs)
     # TODO (Q1.3): Initialize weights based on whether it is pretrained or not
+    if pretrained:
+        alex_net_pretrained = models.alexnet(pretrained = True)
+        model.features.load_state_dict(alex_net_pretrained.state_dict())
+    
 
     return model
 

@@ -13,6 +13,18 @@ from torch.utils.data import Dataset
 import torchvision.transforms as transforms
 
 
+def collate_fn(batch):
+    return (
+      torch.stack([b['image'] for b in batch]),
+      torch.stack([b['label'] for b in batch]),
+      torch.stack([b['wgt'] for b in batch]),
+      torch.stack([b['rois'].squeeze() for b in batch]),
+      torch.stack([b['gt_boxes'] for b in batch]),
+      torch.stack([b['gt_classes'] for b in batch])
+    )
+
+max_gt_len = 42
+
 class VOCDataset(Dataset):
     CLASS_NAMES = [
         'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car',
@@ -50,10 +62,6 @@ class VOCDataset(Dataset):
             self.index_list = [line.strip() for line in fp]
 
         self.anno_list = self.preload_anno()
-
-        # print("+++++++++++++")
-        # print(self.roi_data)
-        # print("+++++++++++++")
 
     @classmethod
     def get_class_name(cls, index):
@@ -156,6 +164,12 @@ class VOCDataset(Dataset):
 
         gt_class_list, gt_boxes = self.anno_list[index][2], self.anno_list[index][3]
 
+        # ADDEDDDD:::::::::::::::::::::::::::
+
+        padding_len = max_gt_len - len(gt_class_list)
+        gt_boxes = np.pad(np.array(gt_boxes), ((0,padding_len), (0,0)), constant_values = -1).tolist()
+        gt_class_list = np.pad(gt_class_list, ((0,padding_len)), constant_values = -1).tolist() 
+
         """
         TODO:
             1. Load bounding box proposals for the index from self.roi_data. The proposals are of the format:
@@ -175,7 +189,13 @@ class VOCDataset(Dataset):
         box_scores = box_scores[sorted_indices]
         boxes = boxes[sorted_indices]
 
-        proposals = boxes[-self.top_n:]#None
+        proposals = boxes[-self.top_n:].squeeze()
+        if proposals.shape[0]<self.top_n:
+            proposals_padding_len = self.top_n - proposals.shape[0]
+            proposals = np.pad(proposals, ((0,proposals_padding_len),(0,0)), constant_values = -1)
+        proposals = torch.from_numpy(proposals)#None
+        
+
         # print(sorted_indices)
         # print(box_scores)
 
@@ -184,6 +204,6 @@ class VOCDataset(Dataset):
         ret['label'] = label
         ret['wgt'] = wgt
         ret['rois'] = proposals
-        ret['gt_boxes'] = gt_boxes
-        ret['gt_classes'] = gt_class_list
+        ret['gt_boxes'] = torch.tensor(gt_boxes)
+        ret['gt_classes'] = torch.tensor(gt_class_list)
         return ret

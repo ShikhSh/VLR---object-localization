@@ -2,6 +2,7 @@ import argparse
 import os
 import shutil
 import time
+from tkinter import image_names
 
 import sklearn
 import sklearn.metrics
@@ -22,6 +23,10 @@ import wandb
 from AlexNet import localizer_alexnet, localizer_alexnet_robust
 from voc_dataset import *
 from utils import *
+
+device = torch.device('cpu')
+if torch.cuda.is_available():
+    device = torch.device("cuda")
 
 USE_WANDB = False  # use flags, wandb is not convenient for debugging
 model_names = sorted(name for name in models.__dict__
@@ -66,7 +71,7 @@ parser.add_argument(
 parser.add_argument(
     '--momentum', default=0.9, type=float, metavar='M', help='momentum')
 parser.add_argument(
-    '--weight-decay',
+    '--weightDecay',
     '--wd',
     default=1e-4,
     type=float,
@@ -118,15 +123,24 @@ parser.add_argument('--vis', action='store_true')
 
 best_prec1 = 0
 
+data_directory = '../VOCdevkit/VOC2007/'
+
+def set_up_wandb():
+    if USE_WANDB:
+        wandb.login(key="f123ce836f30a91233b673ad557cf57dfe08ef9d")
+        run = wandb.init(
+            name = "vlr_hw1_trial", ### Wandb creates random run names if you skip this field, we recommend you give useful names
+            reinit=True, ### Allows reinitalizing runs when you re-run this cell
+            project="vlr_hw1"#, ### Project should be created in your wandb account 
+        #     config=config ### Wandb Config for your run
+        )
 
 def main():
     global args, best_prec1
     args = parser.parse_args()
     args.distributed = args.world_size > 1
 
-    device = torch.device('cpu')
-    if torch.cuda.is_available():
-        device = torch.device("cuda")
+    set_up_wandb()
 
     # create model
     print("=> creating model '{}'".format(args.arch))
@@ -142,7 +156,7 @@ def main():
     # TODO (Q1.1): define loss function (criterion) and optimizer from [1]
     # also use an LR scheduler to decay LR by 10 every 30 epochs
     criterion = nn.BCELoss().to(device)
-    optimizer = torch.optim.SGD(model.parameters(), lr = args.lr, momentum = args.momentum, weight_decay = args.wd, nesterov = True)
+    optimizer = torch.optim.SGD(model.parameters(), lr = args.lr, momentum = args.momentum, weight_decay = args.weightDecay, nesterov = True)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size = 10, gamma = 0.1)
 
 
@@ -168,17 +182,18 @@ def main():
     # Ensure that the sizes are 512x512
     # Also ensure that data directories are correct
     # The ones use for testing by TAs might be different
-    train_dataset = VOCDataset(split='trainval', data_dir='VOCdevkit/VOC2007/')
-    val_dataset = VOCDataset(split='test', data_dir='VOCdevkit/VOC2007/')
-    train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
+    train_dataset = VOCDataset(split='trainval', data_dir=data_directory)
+    val_dataset = VOCDataset(split='test', data_dir=data_directory)
+    # train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
 
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
         batch_size=args.batch_size,
         shuffle=False,
         num_workers=args.workers,
+        collate_fn = collate_fn,
         pin_memory=True,
-        sampler=train_sampler,
+        # sampler=train_sampler,
         drop_last=True)
 
     val_loader = torch.utils.data.DataLoader(
@@ -186,6 +201,7 @@ def main():
         batch_size=args.batch_size,
         shuffle=False,
         num_workers=args.workers,
+        collate_fn = collate_fn,
         pin_memory=True,
         drop_last=True)
 
@@ -232,19 +248,22 @@ def train(train_loader, model, criterion, optimizer, epoch):
     end = time.time()
     for i, (data) in enumerate(train_loader):
         # measure data loading time
+        images, target = data
+        
         data_time.update(time.time() - end)
-
+        images = images.to(device)
         # TODO (Q1.1): Get inputs from the data dict
         # Convert inputs to cuda if training on GPU
-        target = None
+        target = target.to(device)
 
         # TODO (Q1.1): Get output from model
-        imoutput = None
+        imoutput = model(target)
 
         # TODO (Q1.1): Perform any necessary operations on the output
-
+        # sum over the regions to get the score for the image
+        imoutput = torch.sum(imoutput, axis = 1)
         # TODO (Q1.1): Compute loss using ``criterion``
-        loss = None
+        loss = criterion(imoutput, target)
 
         # measure metrics and record loss
         m1 = metric1(imoutput.data, target)
@@ -254,7 +273,9 @@ def train(train_loader, model, criterion, optimizer, epoch):
         avg_m2.update(m2)
 
         # TODO (Q1.1): compute gradient and perform optimizer step
-
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
 
         # measure elapsed time
         batch_time.update(time.time() - end)
@@ -292,18 +313,19 @@ def validate(val_loader, model, criterion, epoch=0):
 
     end = time.time()
     for i, (data) in enumerate(val_loader):
-        print(data)
+        # print(data)
+        images, target = images.to(device)
         # TODO (Q1.1): Get inputs from the data dict
         # Convert inputs to cuda if training on GPU
-        target = None
+        target = target.to(device)
 
         # TODO (Q1.1): Get output from model
-        imoutput = None
+        imoutput = model(images)
 
         # TODO (Q1.1): Perform any necessary functions on the output
-
+        imoutput = torch.sum(imoutput, axis = 1)
         # TODO (Q1.1): Compute loss using ``criterion``
-        loss = None
+        loss = criterion(imoutput, target)
 
         # measure metrics and record loss
         m1 = metric1(imoutput.data, target)
