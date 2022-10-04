@@ -257,6 +257,8 @@ def train(train_loader, model, criterion, optimizer, epoch):
         # print(data[5][0])
         images = data[0]
         target = data[1]
+        print("IamPrintingTarget!!**************************************")
+        print(target)
         
         data_time.update(time.time() - end)
         images = images.to(device)
@@ -274,9 +276,9 @@ def train(train_loader, model, criterion, optimizer, epoch):
         imoutput = torch.max(imoutput, dim = 2)[0].max(2)[0]
 
         # TODO (Q1.1): Compute loss using ``criterion``
-        print("SHAPES::::::::")
-        print(imoutput.shape)
-        print(target.shape)
+        # print("SHAPES::::::::")
+        # print(imoutput.shape)
+        # print(target.shape)
         loss = criterion(imoutput, target)
 
         # measure metrics and record loss
@@ -314,6 +316,18 @@ def train(train_loader, model, criterion, optimizer, epoch):
         #               ))
 
         # TODO (Q1.3): Visualize/log things as mentioned in handout at appropriate intervals
+        if epoch%2==1:
+            image_to_plot = images[21] # we are plotting the 21st image
+            model_op_pltimg = imoutput[21] # we get the scores for C classes for the 21st image
+            model_op_pltimg = model_op_pltimg[0].detach().clone() # we choose class zero for image 21
+            # normalizing it between 0 and 1
+            min_val = model_op_pltimg.min()
+            max_val = model_op_pltimg.max()
+            model_op_pltimg = (model_op_pltimg - min_val) /(max_val - min_val)
+
+            img = wandb.Image(image_to_plot)
+            heat_map = wandb.Image(model_op_pltimg)
+            wandb.log({"train/image": img, "train/heat map": heat_map})
 
         # End of train()
 
@@ -341,35 +355,47 @@ def validate(val_loader, model, criterion, epoch=0):
         imoutput = model(images)
 
         # TODO (Q1.1): Perform any necessary functions on the output
-        imoutput = torch.sum(imoutput, axis = 1)
+        imoutput = torch.max(imoutput, dim = 2)[0].max(2)[0]
         # TODO (Q1.1): Compute loss using ``criterion``
         loss = criterion(imoutput, target)
 
         # measure metrics and record loss
-        m1 = metric1(imoutput.data, target)
-        m2 = metric2(imoutput.data, target)
+        # m1 = metric1(imoutput.data, target)
+        # m2 = metric2(imoutput.data, target)
         losses.update(loss.item(), input.size(0))
-        avg_m1.update(m1)
-        avg_m2.update(m2)
+        # avg_m1.update(m1)
+        # avg_m2.update(m2)
 
         # measure elapsed time
         batch_time.update(time.time() - end)
         end = time.time()
 
-        if i % args.print_freq == 0:
-            print('Test: [{0}/{1}]\t'
-                  'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                  'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-                  'Metric1 {avg_m1.val:.3f} ({avg_m1.avg:.3f})\t'
-                  'Metric2 {avg_m2.val:.3f} ({avg_m2.avg:.3f})'.format(
-                      i,
-                      len(val_loader),
-                      batch_time=batch_time,
-                      loss=losses,
-                      avg_m1=avg_m1,
-                      avg_m2=avg_m2))
+        # if i % args.print_freq == 0:
+        #     print('Test: [{0}/{1}]\t'
+        #           'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+        #           'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
+        #           'Metric1 {avg_m1.val:.3f} ({avg_m1.avg:.3f})\t'
+        #           'Metric2 {avg_m2.val:.3f} ({avg_m2.avg:.3f})'.format(
+        #               i,
+        #               len(val_loader),
+        #               batch_time=batch_time,
+        #               loss=losses,
+        #               avg_m1=avg_m1,
+        #               avg_m2=avg_m2))
 
         # TODO (Q1.3): Visualize things as mentioned in handout
+        if epoch>0 and epoch%2==0:
+            image_to_plot = images[21] # we are plotting the 21st image
+            model_op_pltimg = imoutput[21] # we get the scores for C classes for the 21st image
+            model_op_pltimg = model_op_pltimg[0].detach().clone() # we choose class zero for image 21
+            # normalizing it between 0 and 1
+            min_val = model_op_pltimg.min()
+            max_val = model_op_pltimg.max()
+            model_op_pltimg = (model_op_pltimg - min_val) /(max_val - min_val)
+
+            img = wandb.Image(image_to_plot)
+            heat_map = wandb.Image(model_op_pltimg)
+            wandb.log({"val/image": img, "val/heat map": heat_map})
         # TODO (Q1.3): Visualize at appropriate intervals
 
 
@@ -407,14 +433,14 @@ class AverageMeter(object):
 
 def metric1(output, target):
     # TODO (Q1.5): compute metric1
-
-    return [0]
+    m1 = sklearn.metrics.average_precision_score(target, output)
+    return m1#[0]
 
 
 def metric2(output, target):
     # TODO (Q1.5): compute metric2
-
-    return [0]
+    m2 = sklearn.metrics.recall_score(target, output)
+    return m2#[0]
 
 
 if __name__ == '__main__':

@@ -83,9 +83,9 @@ def localizer_alexnet(pretrained=False, **kwargs):
             # model.features[i].bias.copy_(alex_net_pretrained.features[i].bias)
             model.features[i].load_state_dict(alex_net_pretrained.features[i].state_dict())
         # model.features.load_state_dict(alex_net_pretrained.state_dict())
-        print(alex_net_pretrained.features.state_dict().keys())
-        print(model.features.state_dict().keys())
-        print("+++++++++")
+        # print(alex_net_pretrained.features.state_dict().keys())
+        # print(model.features.state_dict().keys())
+        # print("+++++++++")
         # model.features.load_state_dict(alex_net_pretrained.state_dict())
 
     return model
