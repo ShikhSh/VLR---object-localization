@@ -442,9 +442,10 @@ class AverageMeter(object):
 
 def metric1(output, target):
     # TODO (Q1.5): compute metric1
-    print(target)
-    print(output)
+    # print(target)
+    # print(output)
     count = 0.0
+    m1 = 0.0
     for i in range(20):
         target_class_vals = target.cpu()[:, i]
         output_class_vals = output.cpu()[:, i]
