@@ -28,7 +28,7 @@ device = torch.device('cpu')
 if torch.cuda.is_available():
     device = torch.device("cuda")
 
-USE_WANDB = False#True  # use flags, wandb is not convenient for debugging
+USE_WANDB = True  # use flags, wandb is not convenient for debugging
 model_names = sorted(name for name in models.__dict__
                      if name.islower() and not name.startswith("__")
                      and callable(models.__dict__[name]))
@@ -451,7 +451,7 @@ def metric1(output, target):
         output_class_vals = output.cpu()[:, i]
         if torch.count_nonzero(output_class_vals) == 0 and torch.count_nonzero(target_class_vals) == 0:
             continue
-        m1 += sklearn.metrics.precision_score(target_class_vals, output_class_vals > 0.5)
+        m1 += sklearn.metrics.average_precision_score(target_class_vals, output_class_vals > 0.5)
         count+=1
     return m1/count#[0]
 
