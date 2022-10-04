@@ -123,7 +123,7 @@ parser.add_argument('--vis', action='store_true')
 
 best_prec1 = 0
 
-data_directory = '../VOCdevkit/VOC2007/'
+data_directory = './VOCdevkit/VOC2007/'
 
 def set_up_wandb():
     if USE_WANDB:
@@ -257,8 +257,8 @@ def train(train_loader, model, criterion, optimizer, epoch):
         # print(data[5][0])
         images = data[0]
         target = data[1]
-        print("IamPrintingTarget!!**************************************")
-        print(target)
+        # print("IamPrintingTarget!!**************************************")
+        # print(target)
         
         data_time.update(time.time() - end)
         images = images.to(device)
@@ -284,7 +284,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
         # measure metrics and record loss
         # m1 = metric1(imoutput.data, target)
         # m2 = metric2(imoutput.data, target)
-        losses.update(loss.item(), images.size(0))
+        losses.update(loss.item(), input.size(0))
         # avg_m1.update(m1)
         # avg_m2.update(m2)
 
