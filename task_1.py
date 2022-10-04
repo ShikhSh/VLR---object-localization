@@ -311,8 +311,8 @@ def train(train_loader, model, criterion, optimizer, epoch):
                       batch_time=batch_time,
                       data_time=data_time,
                       loss=losses,
-                      avg_m1=0,#avg_m1,
-                      avg_m2=0#avg_m2
+                      avg_m1=avg_m1,
+                      avg_m2=avg_m2
                       ))
 
         # TODO (Q1.3): Visualize/log things as mentioned in handout at appropriate intervals
