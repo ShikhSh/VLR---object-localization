@@ -441,7 +441,7 @@ def metric2(output, target):
     # TODO (Q1.5): compute metric2
     target_label = torch.argmax(target.cpu(), dim = 1)
     output_labels = torch.argmax(output.cpu(), dim = 1)
-    m2 = sklearn.metrics.recall_score(target_label , output_labels)
+    m2 = sklearn.metrics.recall_score(target_label , output_labels, average=None)
     return m2#[0]
 
 
