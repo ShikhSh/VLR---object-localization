@@ -433,13 +433,13 @@ class AverageMeter(object):
 
 def metric1(output, target):
     # TODO (Q1.5): compute metric1
-    m1 = sklearn.metrics.average_precision_score(target, output)
+    m1 = sklearn.metrics.average_precision_score(target.cpu(), output.cpu())
     return m1#[0]
 
 
 def metric2(output, target):
     # TODO (Q1.5): compute metric2
-    m2 = sklearn.metrics.recall_score(target, output)
+    m2 = sklearn.metrics.recall_score(target.cpu(), output.cpu())
     return m2#[0]
 
 
