@@ -267,13 +267,13 @@ def train(train_loader, model, criterion, optimizer, epoch):
         target = target.to(device)
 
         # TODO (Q1.1): Get output from model
-        imoutput = model(images)
+        imoutput_whole = model(images)
 
         # TODO (Q1.1): Perform any necessary operations on the output
         # max_pool_layer = nn.MaxPool2d(kernel_size=3, stride=2)
         # print(imoutput.shape)
         # F.max_pool2d(imoutput, kernel_size = (29,29))
-        imoutput = torch.max(imoutput, dim = 2)[0].max(2)[0]
+        imoutput = torch.max(imoutput_whole, dim = 2)[0].max(2)[0]
 
         # TODO (Q1.1): Compute loss using ``criterion``
         # print("SHAPES::::::::")
@@ -284,7 +284,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
         # measure metrics and record loss
         # m1 = metric1(imoutput.data, target)
         # m2 = metric2(imoutput.data, target)
-        losses.update(loss.item(), input.size(0))
+        losses.update(loss.item(), images.size(0))
         # avg_m1.update(m1)
         # avg_m2.update(m2)
 
@@ -297,7 +297,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
         batch_time.update(time.time() - end)
         end = time.time()
         wandb.log({'epoch': epoch, 'train/loss': loss})
-        print("EPOCH:", epoch, " Loss:", loss)
+        # print("EPOCH:", epoch, " Loss:", loss)
         # if i % args.print_freq == 0:
         #     print('Epoch: [{0}][{1}/{2}]\t'
         #           'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
@@ -318,7 +318,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
         # TODO (Q1.3): Visualize/log things as mentioned in handout at appropriate intervals
         if epoch%2==1:
             image_to_plot = images[21] # we are plotting the 21st image
-            model_op_pltimg = imoutput[21] # we get the scores for C classes for the 21st image
+            model_op_pltimg = imoutput_whole[21] # we get the scores for C classes for the 21st image
             model_op_pltimg = model_op_pltimg[0].detach().clone() # we choose class zero for image 21
             # normalizing it between 0 and 1
             min_val = model_op_pltimg.min()
@@ -362,7 +362,7 @@ def validate(val_loader, model, criterion, epoch=0):
         # measure metrics and record loss
         # m1 = metric1(imoutput.data, target)
         # m2 = metric2(imoutput.data, target)
-        losses.update(loss.item(), input.size(0))
+        losses.update(loss.item(), images.size(0))
         # avg_m1.update(m1)
         # avg_m2.update(m2)
 
