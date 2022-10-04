@@ -15,7 +15,7 @@ import torchvision.transforms as transforms
 
 def collate_fn(batch):
     return (
-      torch.stack([b['image'] for b in batch], dim = 0),
+      torch.stack([b['image'] for b in batch]),
       torch.stack([b['label'] for b in batch]),
       torch.stack([b['wgt'] for b in batch]),
       torch.stack([b['rois'].squeeze() for b in batch]),
@@ -167,8 +167,8 @@ class VOCDataset(Dataset):
         # ADDEDDDD:::::::::::::::::::::::::::
 
         padding_len = max_gt_len - len(gt_class_list)
-        gt_boxes = np.pad(np.array(gt_boxes), ((0,padding_len), (0,0)), constant_values = -1).tolist()
-        gt_class_list = np.pad(gt_class_list, ((0,padding_len)), constant_values = -1).tolist() 
+        gt_boxes = np.pad(np.array(gt_boxes), ((0,padding_len), (0,0)), constant_values = 0).tolist()
+        gt_class_list = np.pad(gt_class_list, ((0,padding_len)), constant_values = 0).tolist() 
 
         """
         TODO:
@@ -192,7 +192,7 @@ class VOCDataset(Dataset):
         proposals = boxes[-self.top_n:].squeeze()
         if proposals.shape[0]<self.top_n:
             proposals_padding_len = self.top_n - proposals.shape[0]
-            proposals = np.pad(proposals, ((0,proposals_padding_len),(0,0)), constant_values = -1)
+            proposals = np.pad(proposals, ((0,proposals_padding_len),(0,0)), constant_values = 0)
         proposals = torch.from_numpy(proposals)#None
         
 

@@ -183,9 +183,9 @@ def main():
     args = parser.parse_args()
     # TODO (Q2.2): Load datasets and create dataloaders
     # Initialize wandb logger
-    train_dataset = None
-    val_dataset = None
-
+    train_dataset = VOCDataset(split='trainval',image_size = 512 , data_dir=data_directory)
+    val_dataset = VOCDataset(split='test',image_size = 512 , data_dir=data_directory)
+    
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
         batch_size=1,   # batchsize is one for this implementation

@@ -28,7 +28,7 @@ device = torch.device('cpu')
 if torch.cuda.is_available():
     device = torch.device("cuda")
 
-USE_WANDB = False  # use flags, wandb is not convenient for debugging
+USE_WANDB = True  # use flags, wandb is not convenient for debugging
 model_names = sorted(name for name in models.__dict__
                      if name.islower() and not name.startswith("__")
                      and callable(models.__dict__[name]))
@@ -80,7 +80,7 @@ parser.add_argument(
 parser.add_argument(
     '--print-freq',
     '-p',
-    default=10,
+    default=1,
     type=int,
     metavar='N',
     help='print frequency (default: 10)')
@@ -123,7 +123,7 @@ parser.add_argument('--vis', action='store_true')
 
 best_prec1 = 0
 
-data_directory = './VOCdevkit/VOC2007/'
+data_directory = '../VOCdevkit/VOC2007/'
 
 def set_up_wandb():
     if USE_WANDB:
@@ -155,7 +155,7 @@ def main():
 
     # TODO (Q1.1): define loss function (criterion) and optimizer from [1]
     # also use an LR scheduler to decay LR by 10 every 30 epochs
-    criterion = nn.BCELoss().to(device)
+    criterion = nn.BCEWithLogitsLoss().to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr = args.lr, momentum = args.momentum, weight_decay = args.weightDecay, nesterov = True)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size = 10, gamma = 0.1)
 
@@ -182,8 +182,8 @@ def main():
     # Ensure that the sizes are 512x512
     # Also ensure that data directories are correct
     # The ones use for testing by TAs might be different
-    train_dataset = VOCDataset(split='trainval', data_dir=data_directory)
-    val_dataset = VOCDataset(split='test', data_dir=data_directory)
+    train_dataset = VOCDataset(split='trainval',image_size = 512 , data_dir=data_directory)
+    val_dataset = VOCDataset(split='test',image_size = 512 , data_dir=data_directory)
     # train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
 
     train_loader = torch.utils.data.DataLoader(
@@ -215,6 +215,7 @@ def main():
 
     for epoch in range(args.start_epoch, args.epochs):
         # train for one epoch
+        print('Epoch')
         train(train_loader, model, criterion, optimizer, epoch)
 
         # evaluate on validation set
@@ -264,20 +265,26 @@ def train(train_loader, model, criterion, optimizer, epoch):
         target = target.to(device)
 
         # TODO (Q1.1): Get output from model
-        imoutput = model(target)
+        imoutput = model(images)
 
         # TODO (Q1.1): Perform any necessary operations on the output
-        # sum over the regions to get the score for the image
-        imoutput = torch.sum(imoutput, axis = 1)
+        # max_pool_layer = nn.MaxPool2d(kernel_size=3, stride=2)
+        # print(imoutput.shape)
+        # F.max_pool2d(imoutput, kernel_size = (29,29))
+        imoutput = torch.max(imoutput, dim = 2)[0].max(2)[0]
+
         # TODO (Q1.1): Compute loss using ``criterion``
+        print("SHAPES::::::::")
+        print(imoutput.shape)
+        print(target.shape)
         loss = criterion(imoutput, target)
 
         # measure metrics and record loss
-        m1 = metric1(imoutput.data, target)
-        m2 = metric2(imoutput.data, target)
-        losses.update(loss.item(), input.size(0))
-        avg_m1.update(m1)
-        avg_m2.update(m2)
+        # m1 = metric1(imoutput.data, target)
+        # m2 = metric2(imoutput.data, target)
+        losses.update(loss.item(), images.size(0))
+        # avg_m1.update(m1)
+        # avg_m2.update(m2)
 
         # TODO (Q1.1): compute gradient and perform optimizer step
         optimizer.zero_grad()
@@ -287,22 +294,24 @@ def train(train_loader, model, criterion, optimizer, epoch):
         # measure elapsed time
         batch_time.update(time.time() - end)
         end = time.time()
-
-        if i % args.print_freq == 0:
-            print('Epoch: [{0}][{1}/{2}]\t'
-                  'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                  'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
-                  'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-                  'Metric1 {avg_m1.val:.3f} ({avg_m1.avg:.3f})\t'
-                  'Metric2 {avg_m2.val:.3f} ({avg_m2.avg:.3f})'.format(
-                      epoch,
-                      i,
-                      len(train_loader),
-                      batch_time=batch_time,
-                      data_time=data_time,
-                      loss=losses,
-                      avg_m1=avg_m1,
-                      avg_m2=avg_m2))
+        wandb.log({'epoch': epoch, 'train/loss': loss})
+        print("EPOCH:", epoch, " Loss:", loss)
+        # if i % args.print_freq == 0:
+        #     print('Epoch: [{0}][{1}/{2}]\t'
+        #           'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+        #           'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
+        #           'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
+        #           'Metric1 {avg_m1.val:.3f} ({avg_m1.avg:.3f})\t'
+        #           'Metric2 {avg_m2.val:.3f} ({avg_m2.avg:.3f})'.format(
+        #               epoch,
+        #               i,
+        #               len(train_loader),
+        #               batch_time=batch_time,
+        #               data_time=data_time,
+        #               loss=losses,
+        #               avg_m1=0,#avg_m1,
+        #               avg_m2=0#avg_m2
+        #               ))
 
         # TODO (Q1.3): Visualize/log things as mentioned in handout at appropriate intervals
 
