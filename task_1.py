@@ -444,8 +444,15 @@ def metric1(output, target):
     # TODO (Q1.5): compute metric1
     print(target)
     print(output)
-    m1 = sklearn.metrics.average_precision_score(target.cpu(), output.cpu())
-    return m1#[0]
+    count = 0.0
+    for i in range(20):
+        target_class_vals = target.cpu()[:, i]
+        output_class_vals = output.cpu()[:, i]
+        if torch.count_nonzero(output_class_vals) == 0 and torch.count_nonzero(target_class_vals) == 0:
+            continue
+        m1 += sklearn.metrics.precision_score(target_class_vals, output_class_vals)
+        count+=1
+    return m1/count#[0]
 
 
 def metric2(output, target):
