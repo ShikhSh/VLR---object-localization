@@ -297,23 +297,28 @@ def train(train_loader, model, criterion, optimizer, epoch):
         batch_time.update(time.time() - end)
         end = time.time()
         wandb.log({'epoch': epoch, 'train/loss': loss})
-        # print("EPOCH:", epoch, " Loss:", loss)
+        #print("EPOCH:", epoch, " Loss:", loss)
+        # print("M2: ", avg_m2)
         if i % args.print_freq == 0:
-            print('Epoch: [{0}][{1}/{2}]\t'
-                  'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                  'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
-                  'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-                  'Metric1 {avg_m1.val:.3f} ({avg_m1.avg:.3f})\t'
-                  'Metric2 {avg_m2.val:.3f} ({avg_m2.avg:.3f})'.format(
-                      epoch,
-                      i,
-                      len(train_loader),
-                      batch_time=batch_time,
-                      data_time=data_time,
-                      loss=losses,
-                      avg_m1=avg_m1,
-                      avg_m2=avg_m2
-                      ))
+            print("Epoch: ", epoch, ", ", i, "/", len(train_loader))
+            print("Losses: ", losses.val, ", ", losses.avg)
+            print("M1: ", avg_m1.val, ", ", avg_m1.avg)
+            print("M2: ", avg_m2.val, ", ", avg_m2.avg)
+            # print('Epoch: [{0}][{1}/{2}]\t'
+            #       'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+            #       'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
+            #       'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
+            #       'Metric1 {avg_m1.val:.3f} ({avg_m1.avg:.3f})\t'
+            #       'Metric2 {avg_m2.val:.3f} ({avg_m2.avg:.3f})'.format(
+            #           epoch,
+            #           i,
+            #           len(train_loader),
+            #           batch_time=batch_time,
+            #           data_time=data_time,
+            #           loss=losses,
+            #           avg_m1=avg_m1,
+            #           avg_m2=avg_m2
+            #           ))
 
         # TODO (Q1.3): Visualize/log things as mentioned in handout at appropriate intervals
     if epoch%2==1:
@@ -371,17 +376,21 @@ def validate(val_loader, model, criterion, epoch=0):
         end = time.time()
         print("M2: ", avg_m2)
         if i % args.print_freq == 0:
-            print('Test: [{0}/{1}]\t'
-                  'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                  'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-                  'Metric1 {avg_m1.val:.3f} ({avg_m1.avg:.3f})\t'
-                  'Metric2 {avg_m2.val:.3f} ({avg_m2.avg:.3f})'.format(
-                      i,
-                      len(val_loader),
-                      batch_time=batch_time,
-                      loss=losses,
-                      avg_m1=avg_m1,
-                      avg_m2=avg_m2))
+            print("Test: ", i, "/", len(val_loader))
+            print("Loss: ", losses.val, ", ", losses.avg)
+            print("M1: ", avg_m1.val, ", ", avg_m1.avg)
+            print("M2: ", avg_m2.val, ", ", avg_m2.avg)
+            # print('Test: [{0}/{1}]\t'
+            #       'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+            #       'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
+            #       'Metric1 {avg_m1.val:.3f} ({avg_m1.avg:.3f})\t'
+            #       'Metric2 {avg_m2.val:.3f} ({avg_m2.avg:.3f})'.format(
+            #           i,
+            #           len(val_loader),
+            #           batch_time=batch_time,
+            #           loss=losses,
+            #           avg_m1=avg_m1,
+            #           avg_m2=avg_m2))
 
         # TODO (Q1.3): Visualize things as mentioned in handout
         if epoch>0 and epoch%2==0:
@@ -433,15 +442,17 @@ class AverageMeter(object):
 
 def metric1(output, target):
     # TODO (Q1.5): compute metric1
+    print(target)
+    print(output)
     m1 = sklearn.metrics.average_precision_score(target.cpu(), output.cpu())
     return m1#[0]
 
 
 def metric2(output, target):
     # TODO (Q1.5): compute metric2
-    target_label = torch.argmax(target.cpu(), dim = 1)
-    output_labels = torch.argmax(output.cpu(), dim = 1)
-    m2 = sklearn.metrics.recall_score(target_label , output_labels, average=None)
+    # target_label = torch.argmax(target.cpu(), dim = 1)
+    # output_labels = torch.argmax(output.cpu(), dim = 1)
+    m2 = sklearn.metrics.recall_score(target , output > 0.5, average=None)
     return m2#[0]
 
 

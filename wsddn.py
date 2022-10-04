@@ -8,6 +8,8 @@ import torch.nn.functional as F
 from torchvision.ops import roi_pool, roi_align
 
 
+
+
 class WSDDN(nn.Module):
     n_classes = 20
     classes = np.asarray([
@@ -16,7 +18,7 @@ class WSDDN(nn.Module):
         'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor'
     ])
 
-    def __init__(self, classes=None):
+    def __init__(self, classes=None, top_n = 300):
         super(WSDDN, self).__init__()
 
         if classes is not None:
@@ -50,9 +52,14 @@ class WSDDN(nn.Module):
             nn.Linear(4096, 4096),
             nn.ReLU()
         )
+        self.top_n = top_n
 
-        self.score_fc = None
-        self.bbox_fc = None
+        self.score_fc = nn.Sequential(
+            nn.Linear(4096, self.top_n*self.n_classes),
+        )
+        self.bbox_fc = nn.Sequential(
+            nn.Linear(4096, self.top_n*self.n_classes),
+        )
 
         # loss
         self.cross_entropy = None
@@ -70,7 +77,14 @@ class WSDDN(nn.Module):
 
         # TODO (Q2.1): Use image and rois as input
         # compute cls_prob which are N_roi X 20 scores
-        cls_prob = None
+        features = self.features(image)
+        roi_features = self.roi_pool(features, boxes = rois, output_size = (12,12), spatial_scale = 1.0)
+        flattened_features = torch.flatten(roi_features, start_dim=1)
+        lin_model_out = self.classifier(flattened_features)
+        score1 = F.softmax(self.score_fc(lin_model_out), dim = 0)
+        score2 = F.softmax(self.score_fc(lin_model_out), dim = 1)
+
+        cls_prob = torch.mul(score1, score2).clamp(0, 1)
 
 
         if self.training:
