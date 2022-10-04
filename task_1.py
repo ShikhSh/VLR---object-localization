@@ -369,7 +369,7 @@ def validate(val_loader, model, criterion, epoch=0):
         # measure elapsed time
         batch_time.update(time.time() - end)
         end = time.time()
-
+        print("M2: ", avg_m2)
         if i % args.print_freq == 0:
             print('Test: [{0}/{1}]\t'
                   'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
