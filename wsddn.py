@@ -104,10 +104,10 @@ class WSDDN(nn.Module):
         flattened_features = torch.flatten(roi_features, start_dim=1)
         # print(flattened_features.shape)
         lin_model_out = self.classifier(flattened_features.cuda())
-        score1 = F.softmax(self.bbox_fc(lin_model_out), dim = 0)
-        score2 = F.softmax(self.score_fc(lin_model_out), dim = 1)
+        score1 = torch.softmax(self.bbox_fc(lin_model_out), dim = 0)
+        score2 = torch.softmax(self.score_fc(lin_model_out), dim = 1)
 
-        cls_prob = torch.mul(score1, score2).clamp(0, 1)
+        cls_prob = torch.mul(score1, score2)
 
 
         if self.training:
@@ -134,7 +134,7 @@ class WSDDN(nn.Module):
         # essentially we would have the sum of probabilities for each of classes
         # calculate the BCE loss on the label vector and the probabilities
         # BCE loss can handle he probabilities, 
-        cls_prob = torch.reshape(torch.sum(cls_prob, dim=0),(-1,1))
+        cls_prob = torch.reshape(torch.sum(cls_prob, dim=0).clamp(0.0, 1.0),(-1,1))
         # print(cls_prob)
         # print(label_vec)
         # print("printiingLOSSSSS:::::::::")
