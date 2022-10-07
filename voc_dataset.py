@@ -228,6 +228,15 @@ class VOCDataset(Dataset):
         # # torch.Size([20])
         # # torch.Size([300, 4])
 
+        proposals = self.roi_data['boxes'][0][index].astype('float64')
+        proposals_t = proposals.copy()
+        proposals[:,0] = (proposals_t[:,1]*1.0)/float(width)
+        proposals[:,1] = (proposals_t[:,0]*1.0)/float(height)
+        proposals[:,2] = (proposals_t[:,3]*1.0)/float(width)
+        proposals[:,3] = (proposals_t[:,2]*1.0)/float(height)
+        boxScores = self.roi_data['boxScores'][0][index].squeeze()
+        if proposals.shape[0] > self.top_n:
+            proposals = proposals[np.argpartition(boxScores, -1*self.top_n)[-1*self.top_n:]]
 
         ret = {}
         ret['image'] = img # for i image: 3 channels, size is 224x224
