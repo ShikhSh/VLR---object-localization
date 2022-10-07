@@ -215,10 +215,11 @@ def test_model(model, val_loader=None, thresh=0.05):
                 class_gt_indices = torch.where(gt_class_list == class_num)
                 class_gt_boxes = gt_boxes[class_gt_indices]
                 n_class_gt = len(class_gt_boxes)
-                
+
                 trial = torch.where(imoutput[:, class_num]>thresh)
                 if len(trial)>0:
                     print("hurra")
+                    print(trial)
                 # use NMS to get boxes and scores
                 boxes, scores = nms(rois, imoutput[:, class_num])
                 if len(boxes) == 0:
@@ -236,7 +237,7 @@ def test_model(model, val_loader=None, thresh=0.05):
 
                 # now calculate the iou for all the boxes and 
                 iou_values = iou(boxes, class_gt_boxes)
-                
+                print("here")
                 for i in range(len(boxes)):
                     # find the best gt_box for an iou
                     max_ios_pos = iou_values[i].argmax()

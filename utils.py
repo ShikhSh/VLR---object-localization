@@ -25,7 +25,8 @@ def nms(bounding_boxes, confidence_score, threshold=0.05, iou_threshold = 0.3):
 
     return: list of bounding boxes and scores
     """
-    print(confidence_score.shape)
+    print("buakkkkk")
+    print(confidence_score)
     conf_sc, indices = torch.sort(confidence_score, descending=True)
     print("PRINTING BOXESSS:::::::::::::::::::::")
     # print(bounding_boxes.shape)
@@ -40,8 +41,8 @@ def nms(bounding_boxes, confidence_score, threshold=0.05, iou_threshold = 0.3):
         # print(best_score)
         if best_score < threshold:
             # print("not me")
-            # break
-            continue
+            break
+            # continue
         print("I Survived")
         boxes = torch.cat((boxes, best_bbox))
         # boxes.append(best_bbox)
