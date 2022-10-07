@@ -182,10 +182,10 @@ class VOCDataset(Dataset):
             4. You may have to write a custom collate_fn since some of the attributes below may be variable in number for each data point
         """
         box_scores = self.roi_data['boxScores'][0][index]
-        boxes = self.roi_data['boxes'][0][index]
+        boxes = self.roi_data['boxes'][0][index].astype('float64')
         images = self.roi_data['images'][0][index]
         
-        normalization_matrix = np.array([height, width, height, width])
+        normalization_matrix = 1.0*np.array([float(height), float(width), float(height), float(width)])
         boxes = boxes/normalization_matrix
 
         sorted_indices = np.argsort(box_scores, axis = 0)
@@ -202,13 +202,13 @@ class VOCDataset(Dataset):
         boxes[:,3] = temp[:,2]
 
         proposals = boxes[-self.top_n:]
-        if proposals.shape[0]<self.top_n:
-            proposals_padding_len = self.top_n - proposals.shape[0]
-            proposals = np.pad(proposals, ((0,proposals_padding_len),(0,0)), constant_values = -1)# constant value made -1 because classes are from 0 to 19
+        # if proposals.shape[0]<self.top_n:
+        #     proposals_padding_len = self.top_n - proposals.shape[0]
+        #     proposals = np.pad(proposals, ((0,proposals_padding_len),(0,0)), constant_values = -1)# constant value made -1 because classes are from 0 to 19
         # print("boxes_type")
         # print(type(proposals))
-        temp = [ torch.from_numpy(i).type('torch.FloatTensor') for i in proposals]
-        proposals = temp#torch.from_numpy(proposals)#None
+        # temp = [ torch.from_numpy(i).type('torch.FloatTensor') for i in proposals]
+        # proposals = temp#torch.from_numpy(proposals)#None
         # print("boxes_type222")
         # print(type(proposals))
 
@@ -228,15 +228,15 @@ class VOCDataset(Dataset):
         # # torch.Size([20])
         # # torch.Size([300, 4])
 
-        proposals = self.roi_data['boxes'][0][index].astype('float64')
-        proposals_t = proposals.copy()
-        proposals[:,0] = (proposals_t[:,1]*1.0)/float(width)
-        proposals[:,1] = (proposals_t[:,0]*1.0)/float(height)
-        proposals[:,2] = (proposals_t[:,3]*1.0)/float(width)
-        proposals[:,3] = (proposals_t[:,2]*1.0)/float(height)
-        boxScores = self.roi_data['boxScores'][0][index].squeeze()
-        if proposals.shape[0] > self.top_n:
-            proposals = proposals[np.argpartition(boxScores, -1*self.top_n)[-1*self.top_n:]]
+        # proposals = self.roi_data['boxes'][0][index].astype('float64')
+        # proposals_t = proposals.copy()
+        # proposals[:,0] = (proposals_t[:,1]*1.0)/float(width)
+        # proposals[:,1] = (proposals_t[:,0]*1.0)/float(height)
+        # proposals[:,2] = (proposals_t[:,3]*1.0)/float(width)
+        # proposals[:,3] = (proposals_t[:,2]*1.0)/float(height)
+        # boxScores = self.roi_data['boxScores'][0][index].squeeze()
+        # if proposals.shape[0] > self.top_n:
+        #     proposals = proposals[np.argpartition(boxScores, -1*self.top_n)[-1*self.top_n:]]
 
         ret = {}
         ret['image'] = img # for i image: 3 channels, size is 224x224
