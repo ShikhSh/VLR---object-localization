@@ -27,60 +27,60 @@ data_directory = '../VOCdevkit/VOC2007/'
 USE_WANDB = True
 # hyper-parameters
 # ------------
-parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
+parser = argparse.ArgumentParser(help='PyTorch ImageNet Training')
 parser.add_argument(
     '--lr',
     default=0.0001,
     type=float,
-    description='Learning rate'
+    help='Learning rate'
 )
 parser.add_argument(
     '--lr-decay-steps',
     default=150000,
     type=int,
-    description='Interval at which the lr is decayed'
+    help='Interval at which the lr is decayed'
 )
 parser.add_argument(
     '--lr-decay',
     default=0.1,
     type=float,
-    description='Decay rate of lr'
+    help='Decay rate of lr'
 )
 parser.add_argument(
     '--momentum',
     default=0.9,
     type=float,
-    description='Momentum of optimizer'
+    help='Momentum of optimizer'
 )
 parser.add_argument(
     '--weight-decay',
     default=0.0005,
     type=float,
-    description='Weight decay'
+    help='Weight decay'
 )
 parser.add_argument(
     '--epochs',
     default=5,
     type=int,
-    description='Number of epochs'
+    help='Number of epochs'
 )
 parser.add_argument(
     '--val-interval',
     default=5000,
     type=int,
-    description='Interval at which to perform validation'
+    help='Interval at which to perform validation'
 )
 parser.add_argument(
     '--disp-interval',
     default=10,
     type=int,
-    description='Interval at which to perform visualization'
+    help='Interval at which to perform visualization'
 )
 parser.add_argument(
     '--use-wandb',
-    default=False,
+    default=True,
     type=bool,
-    description='Flag to enable visualization'
+    help='Flag to enable visualization'
 )
 # ------------
 
