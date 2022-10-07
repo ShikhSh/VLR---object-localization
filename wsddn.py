@@ -141,7 +141,7 @@ class WSDDN(nn.Module):
         # print(cls_prob.shape)
         # print(label_vec.shape)
         # cls_prob = F.softmax(cls_prob)
-        loss = nn.BCELoss(cls_prob, label_vec, reduction='sum')#.to(device)
+        loss = F.binary_cross_entropy(cls_prob, label_vec, reduction='sum')#.to(device)
 
         return loss
 
