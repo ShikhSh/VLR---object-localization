@@ -341,6 +341,7 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
             # Convert inputs to cuda if training on GPU
             # print(f'rois {rois.shape}')
             out = model(image.cuda(), rois*img_size, target.cuda())
+            print(out)
 
             # backward pass and update
             loss = model.loss
