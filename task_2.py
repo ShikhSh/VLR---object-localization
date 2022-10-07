@@ -483,8 +483,8 @@ def main():
     freeze_alexnet_weigths(net)
     # TODO (Q2.2): Create optimizer only for network parameters that are trainable
     params = list(net.classifier.parameters()) + list(net.score_fc.parameters()) + list(net.bbox_fc.parameters())
-    optimizer = torch.optim.SGD(params, lr = args.lr, momentum = args.momentum, weight_decay = args.weight_decay, nesterov = True)
-
+    # optimizer = torch.optim.SGD(params, lr = args.lr, momentum = args.momentum, weight_decay = args.weight_decay, nesterov = True)
+    optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, net.parameters()), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
     # Training
     train_model(net, train_loader, val_loader, optimizer, args)
 
