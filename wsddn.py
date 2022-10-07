@@ -355,38 +355,78 @@ class WSDDN(nn.Module):
     def loss(self):
         return self.cross_entropy
 
-    def forward(self,
-                image,
-                rois=None,
-                gt_vec=None,
-                ):
-        # image: [1, 3, 512, 512]
+    def forward(self, image, rois=None, target_labels=None):
+        """Define the forward function for 1 image
 
+        :image: image_size x image_size image
+        :rois: N_rois x 4 boxes with their positions
+        :gt_vec: N_gt(if padded - 42) x 4, again boxes with positions
+        
+        :returns: N_rois x n_class vector, where the class score for each vector is defined
+
+        """
+        
         # TODO (Q2.1): Use image and rois as input
-        # compute cls_prob which are N_roi X 20 scores
-        inp_size = image.shape[-1]*1.0
-        x = self.features(image)
-        feature_dim = x.shape[-1]*1.0
-
-        # print(f'rois.shape {rois.shape}')
+        features = self.features(image)
+        # print(features.shape)
+        input_dims = image.shape[-1]
+        feat_dims = features.shape[-1]
+        
+        # print("printing_rois_shape",str(rois.shape))
+        # print("roisssss")
+        # print(features.shape)
+        # print(len(rois))
+        # print(rois[0].shape)
         rois = rois.squeeze()
-        x = self.roi_pool(x, [rois.type('torch.FloatTensor').cuda()], output_size=6, spatial_scale=feature_dim/inp_size) # 300x256x7x7 [N_roi X C X OUT X OUT]
-        x = x.flatten(start_dim=1)
-        x = self.classifier(x) # (N_roi X 4096)
-        
-        class_score = self.score_fc(x) # (N_roi X 20)
-        bbox = self.bbox_fc(x) # (N_roi X 20)
-        
-        class_score = torch.softmax(class_score, dim = 1) # (N_roi X 20)
-        bbox = torch.softmax(bbox, dim = 0) # (N_roi X 20)
+        roi_features = self.roi_pool(features, boxes = [rois.type('torch.FloatTensor').cuda()], output_size = (ROI_OUTPUT_DIM,ROI_OUTPUT_DIM), spatial_scale = 1.0*feat_dims/input_dims)
+        # print(roi_features.shape)
+        flattened_features = torch.flatten(roi_features, start_dim=1)
+        # print(flattened_features.shape)
+        lin_model_out = self.classifier(flattened_features.cuda())
+        score1 = torch.softmax(self.bbox_fc(lin_model_out), dim = 0)
+        score2 = torch.softmax(self.score_fc(lin_model_out), dim = 1)
 
-        cls_prob = class_score*bbox # (N_roi X 20) [for each roi we have a prob of that roi belonging to a particular class]
+        cls_prob = torch.mul(score1, score2)
 
 
         if self.training:
-            label_vec = gt_vec.view(self.n_classes, -1)
+            label_vec = target_labels.view(self.n_classes, -1)
             self.cross_entropy = self.build_loss(cls_prob, label_vec)
+
+        # return cls_prob which are N_roi X 20 scores
         return cls_prob
+    # def forward(self,
+    #             image,
+    #             rois=None,
+    #             gt_vec=None,
+    #             ):
+    #     # image: [1, 3, 512, 512]
+
+    #     # TODO (Q2.1): Use image and rois as input
+    #     # compute cls_prob which are N_roi X 20 scores
+    #     inp_size = image.shape[-1]*1.0
+    #     x = self.features(image)
+    #     feature_dim = x.shape[-1]*1.0
+
+    #     # print(f'rois.shape {rois.shape}')
+    #     rois = rois.squeeze()
+    #     x = self.roi_pool(x, [rois.type('torch.FloatTensor').cuda()], output_size=6, spatial_scale=feature_dim/inp_size) # 300x256x7x7 [N_roi X C X OUT X OUT]
+    #     x = x.flatten(start_dim=1)
+    #     x = self.classifier(x) # (N_roi X 4096)
+        
+    #     class_score = self.score_fc(x) # (N_roi X 20)
+    #     bbox = self.bbox_fc(x) # (N_roi X 20)
+        
+    #     class_score = torch.softmax(class_score, dim = 1) # (N_roi X 20)
+    #     bbox = torch.softmax(bbox, dim = 0) # (N_roi X 20)
+
+    #     cls_prob = class_score*bbox # (N_roi X 20) [for each roi we have a prob of that roi belonging to a particular class]
+
+
+    #     if self.training:
+    #         label_vec = gt_vec.view(self.n_classes, -1)
+    #         self.cross_entropy = self.build_loss(cls_prob, label_vec)
+    #     return cls_prob
 
     # def build_loss(self, cls_prob, label_vec):
     #     """Computes the loss
