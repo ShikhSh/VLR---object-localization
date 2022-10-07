@@ -207,9 +207,9 @@ def test_model(model, val_loader=None, thresh=0.05):
             gt_class_list = torch.stack([torch.as_tensor(x) for x in data['gt_classes']], dim=0).squeeze(dim=0)
             print("IamprintingGTclasses")
             print(gt_class_list)
-            print(image)
-            print(rois*img_size)
-            print(target)
+            # print(image)
+            # print(rois*img_size)
+            # print(target)
             # TODO (Q2.3): perform forward pass, compute cls_probs
             cls_scores = model(image.cuda(), rois*img_size, target.cuda())
             print("output")
@@ -239,7 +239,7 @@ def test_model(model, val_loader=None, thresh=0.05):
                 # perform NMS on boxes and scores, boxes are reverse sorted based on the scores [To get rid of predicted boxes with iou > threshold]
                 boxes, scores = nms(boxes, scores, threshold=thresh)
                 if len(boxes) == 0:
-                    # print("EXITINGGGGGGG1")
+                    print("EXITINGGGGGGG1")
                     continue
                 if len(boxes) > 0:
                     print("WUHOOO")
@@ -261,6 +261,7 @@ def test_model(model, val_loader=None, thresh=0.05):
                             ious[:, iou_idx_max] = 0
                             match_found = True
                     boxes_match_score[class_num].append({'match':match_found, 'score':scores[idx].item()})
+                print("MATCHING-----------------------")
                 print(match_found)
                 
 

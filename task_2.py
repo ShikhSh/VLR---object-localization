@@ -197,9 +197,9 @@ def test_model(model, val_loader=None, thresh=0.05):
             rois = rois*512
 
             # TODO (Q2.3): perform forward pass, compute cls_probs
-            print(image)
-            print(rois)
-            print(target)
+            # print(image)
+            # print(rois)
+            # print(target)
             imoutput = model(image, rois, target)
             print("output")
             print(imoutput)
@@ -252,10 +252,10 @@ def test_model(model, val_loader=None, thresh=0.05):
                     if iou_values[i, max_ios_pos] >= thresh:
                         iou_values[:, max_ios_pos] = -1 #since it should not be used again
                         tp+=1
-                        print("TP")
+                        print("TP-----------------------")
                     else:
                         fp+=1
-                        print("FP")
+                        print("FP-----------------------")
                     track_tp.append(tp)
                     track_fp.append(fp)
                 
@@ -300,7 +300,7 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
 
             # take care that proposal values should be in pixels
             # multiply image size
-            image_size = image.shape[0]
+            image_size = 512#image.shape[0]
             rois = rois*512
 
             # TODO (Q2.2): perform forward pass
