@@ -23,7 +23,7 @@ def collate_fn(batch):
       torch.stack([b['gt_classes'] for b in batch])
     )
 
-max_gt_len = 42
+max_gt_len = 50
 
 class VOCDataset(Dataset):
     CLASS_NAMES = [
@@ -180,8 +180,6 @@ class VOCDataset(Dataset):
         """
         box_scores = self.roi_data['boxScores'][0][index]
         boxes = self.roi_data['boxes'][0][index]
-        print("boxes_type")
-        print(type(boxes))
         images = self.roi_data['images'][0][index]
         
         normalization_matrix = np.array([height, width, height, width])
@@ -204,8 +202,12 @@ class VOCDataset(Dataset):
         if proposals.shape[0]<self.top_n:
             proposals_padding_len = self.top_n - proposals.shape[0]
             proposals = np.pad(proposals, ((0,proposals_padding_len),(0,0)), constant_values = -1)# constant value made -1 because classes are from 0 to 19
-        proposals = torch.from_numpy(proposals)#None
-        
+        print("boxes_type")
+        print(type(proposals))
+        temp = [ torch.from_numpy(i) for i in proposals]
+        proposals = temp#torch.from_numpy(proposals)#None
+        print("boxes_type222")
+        print(type(proposals))
 
         # print(sorted_indices)
         # print(box_scores)
