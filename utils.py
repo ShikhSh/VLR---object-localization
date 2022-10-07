@@ -29,7 +29,7 @@ def nms(bounding_boxes, confidence_score, threshold=0.05, iou_threshold = 0.3):
     conf_sc, indices = torch.sort(confidence_score, descending=True)
     print("PRINTING BOXESSS:::::::::::::::::::::")
     print(bounding_boxes.shape)
-    print(conf_sc.shape)
+    print(len(conf_sc))
     bounding_boxes = torch.squeeze(bounding_boxes)
     b_boxes = bounding_boxes[indices]
     boxes, scores = torch.Tensor([]), []
