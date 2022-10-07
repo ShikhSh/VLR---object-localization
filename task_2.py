@@ -328,7 +328,7 @@ def main():
             param = param.data
         try:
             own_state[name].copy_(param)
-            print('Copied {}'.format(name))
+            # print('Copied {}'.format(name))
         except:
             print('Did not find {}'.format(name))
             continue

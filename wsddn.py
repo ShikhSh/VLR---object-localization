@@ -89,8 +89,8 @@ class WSDDN(nn.Module):
         
         # TODO (Q2.1): Use image and rois as input
         features = self.features(image)
-        print(features.shape)
-        input_dims = features.shape[0]
+        # print(features.shape)
+        input_dims = features.shape[-1]
         
 
         roi_features = self.roi_pool(features, boxes = rois, output_size = (ROI_OUTPUT_DIM,ROI_OUTPUT_DIM), spatial_scale = 1.0*ROI_OUTPUT_DIM/input_dims)
