@@ -261,7 +261,8 @@ def test_model(model, val_loader=None, thresh=0.05):
                 progress_bar.update(1)
             # break
     AP = calculate_map(num_gt_boxes, boxes_match_score)
-
+    print("===================================================================================")
+    print(AP)
     return AP
 
 

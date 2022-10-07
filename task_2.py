@@ -168,6 +168,9 @@ def calculate_map(track_tp, track_fp, n_class_gt):
     track_tp, track_fp, n_class_gt = np.array(track_tp), np.array(track_fp), np.array(n_class_gt)
     recall = 1.0*track_tp/n_class_gt
     precision = 1.0*track_tp/(track_tp+track_fp)
+    print("recnnnnnnnnnnnnnnnnnnnnnprecisionnnnnnnnnnnnnnnnn")
+    print(recall)
+    print(precision)
     map = sklearn.metrics.auc(recall, precision)
     return map
 
