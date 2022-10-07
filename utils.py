@@ -8,6 +8,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as transforms
+import sklearn.metrics
 
 
 def nms(bounding_boxes, confidence_score, threshold=0.05, iou_threshold = 0.3):

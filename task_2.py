@@ -19,6 +19,7 @@ import wandb
 from utils import nms, iou, tensor_to_PIL, get_box_data
 from PIL import Image, ImageDraw
 import sklearn
+import sklearn.metrics
 
 CLASS_NAMES = [
         'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car',
