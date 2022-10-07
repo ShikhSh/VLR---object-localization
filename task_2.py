@@ -197,6 +197,8 @@ def test_model(model, val_loader=None, thresh=0.05):
 
             # TODO (Q2.3): perform forward pass, compute cls_probs
             imoutput = model(image, rois, target)
+            print("VALID INDICES")
+            print(torch.where(imoutput>thresh))
 
             # TODO (Q2.3): Iterate over each class (follow comments)
             # for each class

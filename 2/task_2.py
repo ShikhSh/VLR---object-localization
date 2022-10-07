@@ -154,10 +154,10 @@ def calculate_map(num_gt_boxes, boxes_match_score):
             # Computing area under precison vs recall curve i.e. append 0.0 in the precision and recall lists. Iterate over all the boxes and determine if its a TP (matched a GT box) or FP (didnt match a gt box)
             if match:
                 tp += 1.0
-                print("TP")
+                # print("TP")
             else:
                 fp += 1.0
-                print("FP")
+                # print("FP")
             precision = tp/(tp + fp)
             recall = tp/num_gt_boxes[class_num]
             precisions.append(precision)
@@ -208,7 +208,8 @@ def test_model(model, val_loader=None, thresh=0.05):
 
             # TODO (Q2.3): perform forward pass, compute cls_probs
             cls_scores = model(image.cuda(), rois*img_size, target.cuda())
-
+            print("VALID INDICES")
+            print(torch.where(cls_scores>thresh))
 
             # TODO (Q2.3): Iterate over each class (follow comments)
             for class_num in range(20):

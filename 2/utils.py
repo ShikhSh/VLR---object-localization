@@ -24,7 +24,7 @@ def nms(bounding_boxes, confidence_score, threshold=0.05):
 
     # remove bounding_boxes with scores less than threshold
     valid_indices = torch.where(confidence_score > threshold)[0]
-    print(valid_indices)
+    # print(valid_indices)
     bounding_boxes = bounding_boxes[valid_indices]
     confidence_score = confidence_score[valid_indices]
 
