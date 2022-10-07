@@ -192,8 +192,8 @@ class VOCDataset(Dataset):
         # print(boxes.shape)
         boxes = boxes[sorted_indices]
         boxes = boxes.squeeze()
-        print("boxes_shape")
-        print(boxes.shape)
+        # print("boxes_shape")
+        # print(boxes.shape)
         temp = boxes.copy()
         boxes[:,0] = temp[:,1]
         boxes[:,1] = temp[:,0]
@@ -209,6 +209,15 @@ class VOCDataset(Dataset):
 
         # print(sorted_indices)
         # print(box_scores)
+        print("PRINTING SHAPES ----------------")
+        print(img.shape)
+        print(label.shape)
+        print(wgt.shape)
+        print(proposals.shape)
+        print(gt_boxes.shape)
+        print(gt_class_list.shape)
+        print("END PRINTING SHAPES ----------------")
+
 
         ret = {}
         ret['image'] = img # for i image: 3 channels, size is 224x224
