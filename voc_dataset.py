@@ -180,8 +180,8 @@ class VOCDataset(Dataset):
         """
         box_scores = self.roi_data['boxScores'][0][index]
         boxes = self.roi_data['boxes'][0][index]
-        print("boxes_shape")
-        print(boxes.shape)
+        # print("boxes_shape")
+        # print(boxes.shape)
         images = self.roi_data['images'][0][index]
         
         normalization_matrix = np.array([height, width, height, width])
@@ -189,8 +189,10 @@ class VOCDataset(Dataset):
 
         sorted_indices = np.argsort(box_scores, axis = 0)
         box_scores = box_scores[sorted_indices]
-        print(boxes.shape)
+        # print(boxes.shape)
         boxes = boxes[sorted_indices]
+        boxes = boxes.squeeze()
+        print("boxes_shape")
         print(boxes.shape)
         temp = boxes.copy()
         boxes[:,0] = temp[:,1]
@@ -198,7 +200,7 @@ class VOCDataset(Dataset):
         boxes[:,2] = temp[:,3]
         boxes[:,3] = temp[:,2]
 
-        proposals = boxes[-self.top_n:].squeeze()
+        proposals = boxes[-self.top_n:]
         if proposals.shape[0]<self.top_n:
             proposals_padding_len = self.top_n - proposals.shape[0]
             proposals = np.pad(proposals, ((0,proposals_padding_len),(0,0)), constant_values = -1)# constant value made -1 because classes are from 0 to 19
