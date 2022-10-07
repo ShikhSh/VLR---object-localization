@@ -203,17 +203,24 @@ def test_model(model, val_loader=None, thresh=0.05):
             rois = torch.stack([torch.as_tensor(x) for x in data['rois']], dim=0)
             gt_boxes = torch.stack([torch.as_tensor(x) for x in data['gt_boxes']], dim=0).squeeze(dim=0)
             gt_class_list = torch.stack([torch.as_tensor(x) for x in data['gt_classes']], dim=0).squeeze(dim=0)
-
+            print("IamprintingGTclasses")
+            print(gt_class_list)
             # TODO (Q2.3): perform forward pass, compute cls_probs
             cls_scores = model(image.cuda(), rois*img_size, target.cuda())
-
+            print("output")
+            print(cls_scores)
 
             # TODO (Q2.3): Iterate over each class (follow comments)
             for class_num in range(20):
                 # get valid rois and cls_scores
+                print("Looking for class",str(class_num))
                 scores = cls_scores[:, class_num]
                 boxes = rois.squeeze()[:,:]
 
+                trial = torch.where(cls_scores[:, class_num]>thresh)
+                if len(trial)>0:
+                    print("hurra")
+                    print(trial)
                 # finding the number of gt boxes for the current class (useful for computing recall)
                 curr_gt_boxes = None
                 if target[0, class_num] == 1:
@@ -224,8 +231,10 @@ def test_model(model, val_loader=None, thresh=0.05):
                 # perform NMS on boxes and scores, boxes are reverse sorted based on the scores [To get rid of predicted boxes with iou > threshold]
                 boxes, scores = nms(boxes, scores, threshold=thresh)
                 if len(boxes) == 0:
+                    print("EXITINGGGGGGG1")
                     continue
-
+                if len(boxes) > 0:
+                    print("WUHOOO")
                 boxes = torch.stack(boxes, dim=0)
                 scores = torch.stack(scores, dim=0)
 
@@ -244,12 +253,13 @@ def test_model(model, val_loader=None, thresh=0.05):
                             ious[:, iou_idx_max] = 0
                             match_found = True
                     boxes_match_score[class_num].append({'match':match_found, 'score':scores[idx].item()})
-                
+                print("MATCHING-----------------------")
+                print(match_found)
 
 
             # TODO (Q2.3): visualize bounding box predictions when required
                 progress_bar.update(1)
-    
+            break
     AP = calculate_map(num_gt_boxes, boxes_match_score)
 
     return AP
@@ -315,7 +325,7 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
     for epoch in range(args.epochs):
         # box_plots(val_dataset=val_dataset, indices=[0,1,2,3], model=model, epoch=epoch)
         num_steps = len(train_loader)
-        progress_bar = tqdm(range(num_steps))
+        # progress_bar = tqdm(range(num_steps))
         losses = AverageMeter()
         for iter, data in enumerate(train_loader):
 
@@ -370,8 +380,8 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
 
             # TODO (Q2.4): Perform all visualizations here
             # The intervals for different things are defined in the handout
-            progress_bar.set_postfix({'train/loss': train_loss/step_cnt})
-            progress_bar.update(1)
+            # progress_bar.set_postfix({'train/loss': train_loss/step_cnt})
+            # progress_bar.update(1)
             scheduler.step()
     # TODO (Q2.4): Plot class-wise APs
         # generating plots vs epoch
