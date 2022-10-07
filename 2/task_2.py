@@ -318,7 +318,7 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
     for epoch in range(args.epochs):
         # box_plots(val_dataset=val_dataset, indices=[0,1,2,3], model=model, epoch=epoch)
         num_steps = len(train_loader)
-        progress_bar = tqdm(range(num_steps))
+        # progress_bar = tqdm(range(num_steps))
         losses = AverageMeter()
         for iter, data in enumerate(train_loader):
 
@@ -373,8 +373,8 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
 
             # TODO (Q2.4): Perform all visualizations here
             # The intervals for different things are defined in the handout
-            progress_bar.set_postfix({'train/loss': train_loss/step_cnt})
-            progress_bar.update(1)
+            # progress_bar.set_postfix({'train/loss': train_loss/step_cnt})
+            # progress_bar.update(1)
             scheduler.step()
     # TODO (Q2.4): Plot class-wise APs
         # generating plots vs epoch

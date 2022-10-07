@@ -40,6 +40,7 @@ def nms(bounding_boxes, confidence_score, threshold=0.05, iou_threshold = 0.3):
         # print(best_score)
         if best_score < threshold:
             break
+        print("I Survived")
         boxes = torch.cat((boxes, best_bbox))
         # boxes.append(best_bbox)
         scores.append(best_score)
