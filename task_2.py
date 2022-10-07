@@ -13,6 +13,7 @@ import torchvision.models as models
 import pickle as pkl
 
 from wsddn import WSDDN
+from wsddn2 import WSDDN2
 from voc_dataset import *
 import wandb
 from utils import nms, iou, tensor_to_PIL
@@ -307,7 +308,7 @@ def main():
         drop_last=True)
 
     # Create network and initialize with AlexNet weights
-    net = WSDDN(classes=train_dataset.CLASS_NAMES)
+    net = WSDDN2(classes=train_dataset.CLASS_NAMES)
     net = load_pretained_weights(net)
     print(net)
 
