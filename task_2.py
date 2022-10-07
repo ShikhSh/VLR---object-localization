@@ -167,7 +167,9 @@ def calculate_map(track_tp, track_fp, n_class_gt):
     # this is ap(Avg Precision), do that for all, get map
     track_tp, track_fp, n_class_gt = np.array(track_tp), np.array(track_fp), np.array(n_class_gt)
     recall = 1.0*track_tp/n_class_gt
-    precision = 1.0*track_tp/(track_tp+track_fp)
+    sum_ = (track_tp+track_fp)
+    sum_[sum_==0] = 1
+    precision = 1.0*track_tp/sum_
     print("recnnnnnnnnnnnnnnnnnnnnnprecisionnnnnnnnnnnnnnnnn")
     print(recall)
     print(precision)
@@ -235,14 +237,18 @@ def test_model(model, val_loader=None, thresh=0.05):
                 boxes, scores = nms(rois, imoutput[:, class_num])
                 if len(boxes) == 0:
                     # we need not keep a count of false negatives otherwise this would have come here
-                    class_aps.append(0)
+                    # class_aps.append(0)
+                    track_tp.append(tp)
+                    track_fp.append(fp)
                     print("EXITING1")
                     continue
                 
                 if len(class_gt_boxes) == 0:
                     # there are no gt boxes for this, thus we need not do anything about it
-                    fp += len(boxes)
-                    class_aps.append(0)
+                    # fp += len(boxes)
+                    # class_aps.append(0)
+                    track_tp.append(tp)
+                    track_fp.append(fp)
                     print("EXITING2")
                     continue
 
@@ -268,7 +274,7 @@ def test_model(model, val_loader=None, thresh=0.05):
                 class_aps.append(map_)
             # break
 
-    print("class APs: ")
+    print("====================================================================================class APs: ")
     print(class_aps)
     return class_aps
 
