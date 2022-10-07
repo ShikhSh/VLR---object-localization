@@ -94,6 +94,10 @@ class WSDDN(nn.Module):
         feat_dims = features.shape[-1]
         
         # print("printing_rois_shape",str(rois.shape))
+        print("roisssss")
+        print(features.shape)
+        print(len(rois))
+        print(rois[0].shape)
         roi_features = self.roi_pool(features, boxes = rois, output_size = (ROI_OUTPUT_DIM,ROI_OUTPUT_DIM), spatial_scale = 1.0*feat_dims/input_dims)
         print(roi_features.shape)
         flattened_features = torch.flatten(roi_features, start_dim=1)
