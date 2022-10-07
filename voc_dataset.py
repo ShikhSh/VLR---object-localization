@@ -214,8 +214,8 @@ class VOCDataset(Dataset):
         print(label.shape)
         print(wgt.shape)
         print(proposals.shape)
-        print(gt_boxes.shape)
-        print(gt_class_list.shape)
+        # print(gt_boxes.shape)
+        # print(gt_class_list.shape)
         print("END PRINTING SHAPES ----------------")
 
 
