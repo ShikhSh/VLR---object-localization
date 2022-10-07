@@ -31,8 +31,8 @@ def nms(bounding_boxes, confidence_score, threshold=0.05):
     indices = confidence_score.argsort(descending=True)
     confidence_score = confidence_score[indices]
     bounding_boxes = bounding_boxes[indices]
-
-
+    print("hereeeee")
+    print(confidence_score)
     while len(bounding_boxes) > 0:
         # select the first bounding box and filter the boxes out of the remaining boxes with iou > 0.3 with the given box
         boxes.append(bounding_boxes[0])

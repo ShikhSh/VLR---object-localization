@@ -39,7 +39,7 @@ def nms(bounding_boxes, confidence_score, threshold=0.05, iou_threshold = 0.3):
         best_score = conf_sc[0]
         # print(best_score)
         if best_score < threshold:
-            # print("not me")
+            print("not me")
             # break
             continue
         print("I Survived")
