@@ -95,7 +95,9 @@ class WSDDN(nn.Module):
         
         # print("printing_rois_shape",str(rois.shape))
         roi_features = self.roi_pool(features, boxes = rois, output_size = (ROI_OUTPUT_DIM,ROI_OUTPUT_DIM), spatial_scale = 1.0*feat_dims/input_dims)
+        print(roi_features.shape)
         flattened_features = torch.flatten(roi_features, start_dim=1)
+        print(flattened_features.shape)
         lin_model_out = self.classifier(flattened_features)
         score1 = F.softmax(self.bbox_fc(lin_model_out), dim = 0)
         score2 = F.softmax(self.score_fc(lin_model_out), dim = 1)
