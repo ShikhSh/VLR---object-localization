@@ -224,6 +224,7 @@ def test_model(model, val_loader=None, thresh=0.05):
                 # perform NMS on boxes and scores, boxes are reverse sorted based on the scores [To get rid of predicted boxes with iou > threshold]
                 boxes, scores = nms(boxes, scores, threshold=thresh)
                 if len(boxes) == 0:
+                    print("EXITINGGGGGGG1")
                     continue
 
                 boxes = torch.stack(boxes, dim=0)
