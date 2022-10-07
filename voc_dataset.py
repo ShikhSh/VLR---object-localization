@@ -205,12 +205,12 @@ class VOCDataset(Dataset):
         if proposals.shape[0]<self.top_n:
             proposals_padding_len = self.top_n - proposals.shape[0]
             proposals = np.pad(proposals, ((0,proposals_padding_len),(0,0)), constant_values = -1)# constant value made -1 because classes are from 0 to 19
-        print("boxes_type")
-        print(type(proposals))
-        temp = [ torch.from_numpy(i).cuda() for i in proposals]
+        # print("boxes_type")
+        # print(type(proposals))
+        temp = [ torch.from_numpy(i) for i in proposals]
         proposals = temp#torch.from_numpy(proposals)#None
-        print("boxes_type222")
-        print(type(proposals))
+        # print("boxes_type222")
+        # print(type(proposals))
 
         # print(sorted_indices)
         # print(box_scores)
