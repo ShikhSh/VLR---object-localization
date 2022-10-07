@@ -180,8 +180,8 @@ class VOCDataset(Dataset):
         """
         box_scores = self.roi_data['boxScores'][0][index]
         boxes = self.roi_data['boxes'][0][index]
-        # print("boxes_shape")
-        # print(boxes.shape)
+        print("boxes_type")
+        print(type(boxes))
         images = self.roi_data['images'][0][index]
         
         normalization_matrix = np.array([height, width, height, width])
