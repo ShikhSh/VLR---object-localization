@@ -30,7 +30,7 @@ class VOCDataset(Dataset):
         split='trainval',
         image_size=224,
         top_n=300,
-        data_dir='data/VOCdevkit/VOC2007/'
+        data_dir='../../VOCdevkit/VOC2007/'
     ):
         super().__init__()
         self.split = split     # 'trainval' or 'test'
@@ -41,7 +41,7 @@ class VOCDataset(Dataset):
         self.img_dir = os.path.join(data_dir, 'JPEGImages')
         self.ann_dir = os.path.join(data_dir, 'Annotations')
         self.selective_search_dir = os.path.join(
-            data_dir, 'selective_search_data')
+            data_dir, 'f1')
         self.roi_data = scipy.io.loadmat(
             self.selective_search_dir + '/voc_2007_' + split + '.mat')
 
