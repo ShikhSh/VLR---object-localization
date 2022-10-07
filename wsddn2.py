@@ -108,8 +108,8 @@ class WSDDN2(nn.Module):
         # Checkout forward() to see how it is called
         cls_prob = torch.sum(cls_prob, dim=0).unsqueeze(1)
         cls_prob = torch.clamp(cls_prob, 0., 1.)
-        print("HEY THERE::::")
-        print(cls_prob)
-        print(label_vec)
+        # print("HEY THERE::::")
+        # print(cls_prob)
+        # print(label_vec)
         loss = F.binary_cross_entropy(cls_prob, label_vec, reduction='sum')
         return loss
