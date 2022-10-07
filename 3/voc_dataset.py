@@ -41,7 +41,7 @@ class VOCDataset(Dataset):
         self.img_dir = os.path.join(data_dir, 'JPEGImages')
         self.ann_dir = os.path.join(data_dir, 'Annotations')
         self.selective_search_dir = os.path.join(
-            data_dir, 'selective_search_data')
+            data_dir, 'f1')
         self.roi_data = scipy.io.loadmat(
             self.selective_search_dir + '/voc_2007_' + split + '.mat')
 
