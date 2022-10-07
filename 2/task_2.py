@@ -13,7 +13,7 @@ from datetime import datetime
 import pickle as pkl
 
 # imports
-from wsddn import WSDDN
+from wsddn2 import WSDDN
 from voc_dataset import *
 import wandb
 from utils import nms, tensor_to_PIL, iou, get_box_data
@@ -22,7 +22,7 @@ import time
 from tqdm import tqdm
 from sklearn.metrics import auc
 import torchvision
-import mapcalc
+# import mapcalc
 from collections import defaultdict
 
 img_size = 512
