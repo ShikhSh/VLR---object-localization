@@ -197,9 +197,9 @@ def test_model(model, val_loader=None, thresh=0.05):
 
             # TODO (Q2.3): perform forward pass, compute cls_probs
             imoutput = model(image, rois, target)
-            tmp = torch.where(imoutput>thresh)
-            if len(tmp)>0:
-                print("VALID INDICES")
+            # tmp = torch.where(imoutput>thresh)
+            # if len(tmp)>0:
+            #     print("VALID INDICES")
 
             # TODO (Q2.3): Iterate over each class (follow comments)
             # for each class
@@ -215,7 +215,10 @@ def test_model(model, val_loader=None, thresh=0.05):
                 class_gt_indices = torch.where(gt_class_list == class_num)
                 class_gt_boxes = gt_boxes[class_gt_indices]
                 n_class_gt = len(class_gt_boxes)
-
+                
+                trial = torch.where(imoutput[:, class_num]>thresh)
+                if len(trial)>0:
+                    print("hurra")
                 # use NMS to get boxes and scores
                 boxes, scores = nms(rois, imoutput[:, class_num])
                 if len(boxes) == 0:

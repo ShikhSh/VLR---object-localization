@@ -209,9 +209,9 @@ def test_model(model, val_loader=None, thresh=0.05):
             # TODO (Q2.3): perform forward pass, compute cls_probs
             cls_scores = model(image.cuda(), rois*img_size, target.cuda())
             
-            tmp = torch.where(cls_scores>thresh)
-            if len(tmp)>0:
-                print("VALID INDICES")
+            # tmp = torch.where(cls_scores>thresh)
+            # if len(tmp)>0:
+            #     print("VALID INDICES")
 
             # TODO (Q2.3): Iterate over each class (follow comments)
             for class_num in range(20):
@@ -219,6 +219,9 @@ def test_model(model, val_loader=None, thresh=0.05):
                 scores = cls_scores[:, class_num]
                 boxes = rois.squeeze()[:,:]
 
+                trial = torch.where(cls_scores[:, class_num]>thresh)
+                if len(trial)>0:
+                    print("hurra")
                 # finding the number of gt boxes for the current class (useful for computing recall)
                 curr_gt_boxes = None
                 if target[0, class_num] == 1:
@@ -231,7 +234,8 @@ def test_model(model, val_loader=None, thresh=0.05):
                 if len(boxes) == 0:
                     # print("EXITINGGGGGGG1")
                     continue
-
+                if len(boxes) > 0:
+                    print("WUHOOO")
                 boxes = torch.stack(boxes, dim=0)
                 scores = torch.stack(scores, dim=0)
 
