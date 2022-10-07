@@ -17,7 +17,7 @@ class WSDDN2(nn.Module):
     ])
 
     def __init__(self, classes=classes):
-        super(WSDDN, self).__init__()
+        super(WSDDN2, self).__init__()
 
         print(f'classes {classes}')
 
