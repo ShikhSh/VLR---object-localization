@@ -218,26 +218,30 @@ def test_model(model, val_loader=None, thresh=0.05):
                 if len(boxes) == 0:
                     # we need not keep a count of false negatives otherwise this would have come here
                     class_aps.append(0)
+                    print("EXITING1")
                     continue
                 
                 if len(class_gt_boxes) == 0:
                     # there are no gt boxes for this, thus we need not do anything about it
-                    # fp += len(boxes)
+                    fp += len(boxes)
                     class_aps.append(0)
+                    print("EXITING2")
                     continue
 
                 # now calculate the iou for all the boxes and 
                 iou_values = iou(boxes, class_gt_boxes)
                 
-                for idx in range(len(boxes)):
+                for i in range(len(boxes)):
                     # find the best gt_box for an iou
-                    max_ios_pos = iou_values[idx].argmax()
+                    max_ios_pos = iou_values[i].argmax()
                     # check if that value is greater than the threshold
-                    if iou_values[idx, max_ios_pos] >= thresh:
+                    if iou_values[i, max_ios_pos] >= thresh:
                         iou_values[:, max_ios_pos] = -1 #since it should not be used again
                         tp+=1
+                        print("TP")
                     else:
                         fp+=1
+                        print("FP")
                     track_tp.append(tp)
                     track_fp.append(fp)
                 
