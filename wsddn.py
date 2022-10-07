@@ -137,6 +137,7 @@ class WSDDN(nn.Module):
         cls_prob = torch.sum(cls_prob, dim=0)
         print("printiingLOSSSSS:::::::::")
         print(cls_prob.shape)
+        print(label_vec.shape)
         # cls_prob = F.softmax(cls_prob)
         loss = nn.BCELoss(cls_prob, label_vec, reduction='sum').to(device)
 
