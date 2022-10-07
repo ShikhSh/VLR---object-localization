@@ -157,3 +157,22 @@ def get_box_data(classes, bbox_coordinates):
         ]
 
     return box_list
+
+def get_unsupervised_box_data(bbox_coordinates):
+    """
+    classes : tensor containing class predictions/gt
+    bbox_coordinates: tensor containing [[xmin0, ymin0, xmax0, ymax0], [xmin1, ymin1, ...]] (Nx4)
+    return list of boxes as expected by the wandb bbox plotter
+    """
+    # print(bbox_coordinates)
+    box_list = [{
+            "position": {
+                "minX": bbox_coordinates[i][0],
+                "minY": bbox_coordinates[i][1],
+                "maxX": bbox_coordinates[i][2],
+                "maxY": bbox_coordinates[i][3],
+            },
+        } for i in range(len(bbox_coordinates))
+        ]
+
+    return box_list

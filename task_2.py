@@ -16,9 +16,33 @@ from wsddn import WSDDN
 from wsddn2 import WSDDN2
 from voc_dataset import *
 import wandb
-from utils import nms, iou, tensor_to_PIL
+from utils import nms, iou, tensor_to_PIL, get_box_data
 from PIL import Image, ImageDraw
 import sklearn
+
+CLASS_NAMES = [
+        'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car',
+        'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike',
+        'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor'
+    ]
+
+class AverageMeter(object):
+    """Computes and stores the average and current value"""
+
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.val = 0
+        self.avg = 0
+        self.sum = 0
+        self.count = 0
+
+    def update(self, val, n=1):
+        self.val = val
+        self.sum += val * n
+        self.count += n
+        self.avg = self.sum / self.count
 
 device = torch.device('cpu')
 if torch.cuda.is_available():
@@ -123,6 +147,8 @@ def calculate_map(track_tp, track_fp, n_class_gt):
     # TODO (Q2.3): Calculate mAP on test set.
     # Feel free to write necessary function parameters.
     
+    # Understanding: (part of it is implemented below and part of here)
+    # 
     # for each class:
     # extract gt_boxes for that class using gt_class
     # start with max score output bounding box
@@ -145,13 +171,12 @@ def calculate_map(track_tp, track_fp, n_class_gt):
     return map
 
 
-
-
 def test_model(model, val_loader=None, thresh=0.05):
     """
     Tests the networks and visualizes the detections
     :param thresh: Confidence threshold
     """
+    class_aps = []
     with torch.no_grad():
         for iter, data in enumerate(val_loader):
 
@@ -166,7 +191,9 @@ def test_model(model, val_loader=None, thresh=0.05):
             image = image.to(device)
             target = target.to(device)
             # wgt = wgt.to(device)
-            rois = rois.to(device)
+            rois = torch.stack([torch.as_tensor(x) for x in data['rois']], dim=0)
+            image_size = image.shape[0]
+            rois = rois*image_size
 
             # TODO (Q2.3): perform forward pass, compute cls_probs
             imoutput = model(image, rois, target)
@@ -175,7 +202,7 @@ def test_model(model, val_loader=None, thresh=0.05):
             # for each class
             # extract the bounding boxes for that image from highest scoring to lowest scoring
             # match the ones
-            class_aps = []
+            
             for class_num in range(20):
                 # get valid rois and cls_scores based on thresh
                 tp = 0
@@ -218,7 +245,9 @@ def test_model(model, val_loader=None, thresh=0.05):
                 map_ = calculate_map(track_tp, track_fp, n_class_gt)
                 class_aps.append(map_)
 
-                print("MAP: ", str(map_))
+    print("class APs: ")
+    print(class_aps)
+    return class_aps
 
 
 def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=None):
@@ -229,6 +258,7 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
     train_loss = 0
     step_cnt = 0
     for epoch in range(args.epochs):
+        losses = AverageMeter()
         for iter, data in enumerate(train_loader):
 
             # TODO (Q2.2): get one batch and perform forward pass
@@ -259,6 +289,7 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
 
             # backward pass and update
             loss = model.loss
+            losses.update(loss.item(), image_size)
             train_loss += loss.item()
             step_cnt += 1
 
@@ -268,17 +299,117 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
 
             # TODO (Q2.2): evaluate the model every N iterations (N defined in handout)
             # Add wandb logging wherever necessary
+            if step_cnt%500 == 0 and iter>0:
+                wandb.log(
+                    {'train/loss': losses.avg, 'train/Loss': train_loss/step_cnt}
+                )
             if iter % args.val_interval == 0 and iter != 0:
                 model.eval()
                 ap = test_model(model, val_loader)
-                print("AP ", ap)
+                map_ = np.mean(ap)
+                print("AP ", map_)
                 model.train()
 
             # TODO (Q2.4): Perform all visualizations here
             # The intervals for different things are defined in the handout
-
+        if epoch == 0 or epoch == args.epochs-1:
+            plot_images(model, val_loader)
+        aps = test_model(model, val_loader)
+        map_ = np.mean(aps)
+        wandb.log(
+            {'Epoch': epoch, 'test/mAP': map_}
+        )
+        for i in range(0,10,2):
+            wandb.log(
+                {'Epoch': epoch, 'class': i, 'classAP': aps[i]}
+            )
     # TODO (Q2.4): Plot class-wise APs
 
+
+def get_img_plotting_data(model, val_loader=None, thresh=0.05):
+    images_to_plot = [2,4,7,9,10]
+    images = []
+    bounding_boxes = []
+    classes = []
+    with torch.no_grad():
+        for iter, data in enumerate(val_loader):
+            curr_bounding_boxes = []
+            curr_classes = []
+            if iter>8:
+                break
+            # one batch = data for one image
+            image = data['image']
+            target = data['label']
+            rois = data['rois']
+            gt_boxes = data['gt_boxes']
+            gt_class_list = data['gt_classes']
+
+            image = image.to(device)
+            target = target.to(device)
+            rois = torch.stack([torch.as_tensor(x) for x in data['rois']], dim=0)
+            image_size = image.shape[0]
+            rois = rois*image_size
+
+            # TODO (Q2.3): perform forward pass, compute cls_probs
+            imoutput = model(image, rois, target)
+
+            # TODO (Q2.3): Iterate over each class (follow comments)
+            # for each class
+            # extract the bounding boxes for that image from highest scoring to lowest scoring
+            # match the ones
+            
+            for class_num in range(20):
+                # get valid rois and cls_scores based on thresh
+                class_gt_indices = torch.where(gt_class_list == class_num)
+                class_gt_boxes = gt_boxes[class_gt_indices]
+
+                # use NMS to get boxes and scores
+                boxes, scores = nms(rois, imoutput[:, class_num])
+                if len(boxes) == 0:
+                    continue
+                
+                if len(class_gt_boxes) == 0:
+                    continue
+
+                # now calculate the iou for all the boxes and 
+                iou_values = iou(boxes, class_gt_boxes)
+                
+                for idx in range(len(boxes)):
+                    # find the best gt_box for an iou
+                    max_ios_pos = iou_values[idx].argmax()
+                    # check if that value is greater than the threshold
+                    if iou_values[idx, max_ios_pos] >= thresh:
+                        iou_values[:, max_ios_pos] = -1 #since it should not be used again
+                        curr_bounding_boxes.append(boxes[idx])
+                        curr_classes.append(class_num)
+            images.append(image)
+            bounding_boxes.append(curr_bounding_boxes)
+            classes.append(curr_classes)
+            
+
+    
+    return images, bounding_boxes, classes
+
+def plot_images(model, val_loader):
+
+    images, roises, classes = get_img_plotting_data(model, val_loader)
+    for image,rois, class_ in zip(images, roises, classes):
+        class_id_to_label = dict(enumerate(CLASS_NAMES))
+
+        # TODO: load the GT information corresponding to index 2020.
+        # tensor_image = image['image']
+        original_image = tensor_to_PIL(image)
+        # rois = image_2020['rois']
+
+        unsup_img = wandb.Image(original_image, boxes={
+            "predictions": {
+                "box_data": get_box_data(class_, rois),
+                "class_labels": class_id_to_label,
+            },
+        })
+
+        # TODO: log the GT bounding box
+        wandb.log({"image{i}": unsup_img})
 
 def main():
     """
