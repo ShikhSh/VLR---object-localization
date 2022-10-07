@@ -25,7 +25,7 @@ def nms(bounding_boxes, confidence_score, threshold=0.05, iou_threshold = 0.3):
 
     return: list of bounding boxes and scores
     """
-
+    print(confidence_score.shape)
     conf_sc, indices = torch.sort(confidence_score, descending=True)
     print("PRINTING BOXESSS:::::::::::::::::::::")
     # print(bounding_boxes.shape)
