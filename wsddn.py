@@ -21,7 +21,7 @@ class WSDDN(nn.Module):
         'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor'
     ])
 
-        def __init__(self, classes=classes):
+    def __init__(self, classes=classes):
         super(WSDDN, self).__init__()
 
         print(f'classes {classes}')
