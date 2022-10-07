@@ -214,7 +214,10 @@ def test_model(model, val_loader=None, thresh=0.05):
                     track_fp.append(fp)
                 
                 # TODO (Q2.3): visualize bounding box predictions when required
-                class_aps.append(calculate_map(track_tp, track_fp, n_class_gt))
+                map_ = calculate_map(track_tp, track_fp, n_class_gt)
+                class_aps.append(map_)
+
+                print("MAP: ", str(map_))
 
 
 def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=None):

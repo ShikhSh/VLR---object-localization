@@ -209,14 +209,19 @@ class VOCDataset(Dataset):
 
         # print(sorted_indices)
         # print(box_scores)
-        print("PRINTING SHAPES ----------------")
-        print(img.shape)
-        print(label.shape)
-        print(wgt.shape)
-        print(proposals.shape)
-        # print(gt_boxes.shape)
-        # print(gt_class_list.shape)
-        print("END PRINTING SHAPES ----------------")
+        # print("PRINTING SHAPES ----------------")
+        # print(img.shape)
+        # print(label.shape)
+        # print(wgt.shape)
+        # print(proposals.shape)
+        # # print(gt_boxes.shape)
+        # # print(gt_class_list.shape)
+        # print("END PRINTING SHAPES ----------------")
+        # SHAPES:
+        # # torch.Size([3, 512, 512])
+        # # torch.Size([20])
+        # # torch.Size([20])
+        # # torch.Size([300, 4])
 
 
         ret = {}
