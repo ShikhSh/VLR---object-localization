@@ -197,8 +197,9 @@ def test_model(model, val_loader=None, thresh=0.05):
 
             # TODO (Q2.3): perform forward pass, compute cls_probs
             imoutput = model(image, rois, target)
-            print("VALID INDICES")
-            print(torch.where(imoutput>thresh))
+            tmp = torch.where(imoutput>thresh)
+            if len(tmp)>0:
+                print("VALID INDICES")
 
             # TODO (Q2.3): Iterate over each class (follow comments)
             # for each class
@@ -292,8 +293,7 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
 
             # TODO (Q2.2): perform forward pass
             imoutput = model(image, rois, target)
-            print("herrrrreeeeeeeeee")
-            print(imoutput)
+            
 
             # backward pass and update
             loss = model.loss
@@ -485,8 +485,8 @@ def main():
     freeze_alexnet_weigths(net)
     # TODO (Q2.2): Create optimizer only for network parameters that are trainable
     params = list(net.classifier.parameters()) + list(net.score_fc.parameters()) + list(net.bbox_fc.parameters())
-    # optimizer = torch.optim.SGD(params, lr = args.lr, momentum = args.momentum, weight_decay = args.weight_decay, nesterov = True)
-    optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, net.parameters()), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
+    optimizer = torch.optim.SGD(params, lr = args.lr, momentum = args.momentum, weight_decay = args.weight_decay, nesterov = True)
+    # optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, net.parameters()), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
     # Training
     train_model(net, train_loader, val_loader, optimizer, args)
 

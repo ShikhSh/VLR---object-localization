@@ -208,8 +208,10 @@ def test_model(model, val_loader=None, thresh=0.05):
 
             # TODO (Q2.3): perform forward pass, compute cls_probs
             cls_scores = model(image.cuda(), rois*img_size, target.cuda())
-            print("VALID INDICES")
-            print(torch.where(cls_scores>thresh))
+            
+            tmp = torch.where(cls_scores>thresh)
+            if len(tmp)>0:
+                print("VALID INDICES")
 
             # TODO (Q2.3): Iterate over each class (follow comments)
             for class_num in range(20):
@@ -377,7 +379,7 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
             # The intervals for different things are defined in the handout
             # progress_bar.set_postfix({'train/loss': train_loss/step_cnt})
             # progress_bar.update(1)
-            scheduler.step()
+            # scheduler.step()
     # TODO (Q2.4): Plot class-wise APs
         # generating plots vs epoch
         if args.use_wandb:
@@ -466,9 +468,9 @@ def main():
 
     # TODO (Q2.2): Create optimizer only for network parameters that are trainable
     optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, net.parameters()), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
-    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[args.lr_decay_steps], gamma=args.lr_decay)
+    # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[args.lr_decay_steps], gamma=args.lr_decay)
     # Training
-    train_model(net, train_loader, val_loader, optimizer, args, scheduler, val_dataset)
+    train_model(net, train_loader, val_loader, optimizer, args, val_dataset)
 
     # with open(os.path.join('task_2/wts', 'model.pth'), 'wb') as f:
     #     torch.save(net.state_dict(), f)
