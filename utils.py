@@ -27,9 +27,9 @@ def nms(bounding_boxes, confidence_score, threshold=0.05, iou_threshold = 0.3):
     """
 
     conf_sc, indices = torch.sort(confidence_score, descending=True)
-    print("PRINTING BOXESSS:::::::::::::::::::::")
-    print(bounding_boxes.shape)
-    print(len(conf_sc))
+    # print("PRINTING BOXESSS:::::::::::::::::::::")
+    # print(bounding_boxes.shape)
+    # print(len(conf_sc))
     bounding_boxes = torch.squeeze(bounding_boxes)
     b_boxes = bounding_boxes[indices]
     boxes, scores = torch.Tensor([]), []
@@ -37,7 +37,7 @@ def nms(bounding_boxes, confidence_score, threshold=0.05, iou_threshold = 0.3):
     while len(conf_sc)>0:
         best_bbox = torch.unsqueeze(b_boxes[0], dim = 0)
         best_score = conf_sc[0]
-        print(best_score)
+        # print(best_score)
         if best_score < threshold:
             break
         boxes = torch.cat((boxes, best_bbox))
@@ -48,10 +48,10 @@ def nms(bounding_boxes, confidence_score, threshold=0.05, iou_threshold = 0.3):
         iou_score = iou(b_boxes, best_bbox)#torch.unsqueeze(iou(b_boxes, best_bbox))
         # print(iou_score)
         iou_score = torch.squeeze(iou_score, dim = 1)
-        print("after")
-        print(iou_score)
+        # print("after")
+        # print(iou_score)
         indices_to_keep = torch.where(iou_score<iou_threshold)
-        print(indices_to_keep)
+        # print(indices_to_keep)
         # print("PRINTING BOXESSS:::::::::::::::::::::")
         # print(b_boxes.shape)
         b_boxes = b_boxes[indices_to_keep]

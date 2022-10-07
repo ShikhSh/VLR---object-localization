@@ -218,14 +218,14 @@ def test_model(model, val_loader=None, thresh=0.05):
                 if len(boxes) == 0:
                     # we need not keep a count of false negatives otherwise this would have come here
                     class_aps.append(0)
-                    print("EXITING1")
+                    # print("EXITING1")
                     continue
                 
                 if len(class_gt_boxes) == 0:
                     # there are no gt boxes for this, thus we need not do anything about it
                     fp += len(boxes)
                     class_aps.append(0)
-                    print("EXITING2")
+                    # print("EXITING2")
                     continue
 
                 # now calculate the iou for all the boxes and 

@@ -154,8 +154,10 @@ def calculate_map(num_gt_boxes, boxes_match_score):
             # Computing area under precison vs recall curve i.e. append 0.0 in the precision and recall lists. Iterate over all the boxes and determine if its a TP (matched a GT box) or FP (didnt match a gt box)
             if match:
                 tp += 1.0
+                print("TP")
             else:
                 fp += 1.0
+                print("FP")
             precision = tp/(tp + fp)
             recall = tp/num_gt_boxes[class_num]
             precisions.append(precision)
@@ -224,7 +226,7 @@ def test_model(model, val_loader=None, thresh=0.05):
                 # perform NMS on boxes and scores, boxes are reverse sorted based on the scores [To get rid of predicted boxes with iou > threshold]
                 boxes, scores = nms(boxes, scores, threshold=thresh)
                 if len(boxes) == 0:
-                    print("EXITINGGGGGGG1")
+                    # print("EXITINGGGGGGG1")
                     continue
 
                 boxes = torch.stack(boxes, dim=0)
