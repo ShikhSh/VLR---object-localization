@@ -292,6 +292,8 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
 
             # TODO (Q2.2): perform forward pass
             imoutput = model(image, rois, target)
+            print("herrrrreeeeeeeeee")
+            print(imoutput)
 
             # backward pass and update
             loss = model.loss
