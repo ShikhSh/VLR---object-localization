@@ -12,9 +12,9 @@ import torch
 from torch.utils.data import Dataset
 import torchvision.transforms as transforms
 
-device = torch.device('cpu')
-if torch.cuda.is_available():
-    device = torch.device("cuda")
+# device = torch.device('cpu')
+# if torch.cuda.is_available():
+#     device = torch.device("cuda")
 
 def collate_fn(batch):
     return (
@@ -207,7 +207,7 @@ class VOCDataset(Dataset):
             proposals = np.pad(proposals, ((0,proposals_padding_len),(0,0)), constant_values = -1)# constant value made -1 because classes are from 0 to 19
         print("boxes_type")
         print(type(proposals))
-        temp = [ torch.from_numpy(i).to(device) for i in proposals]
+        temp = [ torch.from_numpy(i).cuda() for i in proposals]
         proposals = temp#torch.from_numpy(proposals)#None
         print("boxes_type222")
         print(type(proposals))

@@ -93,7 +93,7 @@ class WSDDN(nn.Module):
         input_dims = image.shape[-1]
         feat_dims = features.shape[-1]
         
-        print("printing_rois_shape",str(rois.shape))
+        # print("printing_rois_shape",str(rois.shape))
         roi_features = self.roi_pool(features, boxes = rois, output_size = (ROI_OUTPUT_DIM,ROI_OUTPUT_DIM), spatial_scale = 1.0*feat_dims/input_dims)
         flattened_features = torch.flatten(roi_features, start_dim=1)
         lin_model_out = self.classifier(flattened_features)
