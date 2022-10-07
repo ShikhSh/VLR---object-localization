@@ -207,7 +207,7 @@ class VOCDataset(Dataset):
             proposals = np.pad(proposals, ((0,proposals_padding_len),(0,0)), constant_values = -1)# constant value made -1 because classes are from 0 to 19
         # print("boxes_type")
         # print(type(proposals))
-        temp = [ torch.from_numpy(i) for i in proposals]
+        temp = [ torch.from_numpy(i).type('torch.FloatTensor') for i in proposals]
         proposals = temp#torch.from_numpy(proposals)#None
         # print("boxes_type222")
         # print(type(proposals))
