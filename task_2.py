@@ -9,16 +9,22 @@ import torch.utils.model_zoo as model_zoo
 from torch.nn.parameter import Parameter
 import numpy as np
 from datetime import datetime
+import torchvision.models as models
 import pickle as pkl
 
-# imports
 from wsddn import WSDDN
 from voc_dataset import *
 import wandb
-from utils import nms, tensor_to_PIL
+from utils import nms, iou, tensor_to_PIL
 from PIL import Image, ImageDraw
+import sklearn
 
+device = torch.device('cpu')
+if torch.cuda.is_available():
+    device = torch.device("cuda")
 
+data_directory = '../VOCdevkit/VOC2007/'
+USE_WANDB = True
 # hyper-parameters
 # ------------
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
@@ -89,14 +95,55 @@ output_dir = "./"
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
+def freeze_alexnet_weigths(model):
+    # Freezing the model for the convolution layers:
+    for i in [0,3,6,8,10]:
+        model.features[i].weight.requires_grad = False
 
-def calculate_map():
+def set_up_wandb():
+    if USE_WANDB:
+        wandb.login(key="f123ce836f30a91233b673ad557cf57dfe08ef9d")
+        run = wandb.init(
+            name = "vlr_hw1_trial",
+            reinit=True,
+            project="vlr_hw1"
+        )
+
+def load_pretained_weights(model):
+    alex_net_pretrained = models.alexnet(pretrained = True)
+    for i in [0, 3, 6, 8, 10]:
+        model.features[i].load_state_dict(alex_net_pretrained.features[i].state_dict())
+    return model
+
+def calculate_map(track_tp, track_fp, n_class_gt):
     """
     Calculate the mAP for classification.
     """
     # TODO (Q2.3): Calculate mAP on test set.
     # Feel free to write necessary function parameters.
-    pass
+    
+    # for each class:
+    # extract gt_boxes for that class using gt_class
+    # start with max score output bounding box
+    # find corresponding gt box with highest iou score (match the sequence of x's and y's for bb and gt_boxes)
+    #   remove that gt box, since it cannot be used any more
+    #   if iou score > threshold, there is a great overlap between the 2
+    #       tp++
+    #   else
+    #       fp++
+    # continue iterating over the other bb for the same class
+    # thus for each class, we get one tp and one fp score
+    # get the tp and fp scores for all the classes
+    # calculate the precision and recall
+    # now calc area under precision-recall curve using sklearn
+    # this is ap(Avg Precision), do that for all, get map
+    track_tp, track_fp, n_class_gt = np.array(track_tp), np.array(track_fp), np.array(n_class_gt)
+    recall = 1.0*track_tp/n_class_gt
+    precision = 1.0*track_tp/(track_tp+track_fp)
+    map = sklearn.metrics.auc(recall, precision)
+    return map
+
+
 
 
 def test_model(model, val_loader=None, thresh=0.05):
@@ -115,18 +162,59 @@ def test_model(model, val_loader=None, thresh=0.05):
             gt_boxes = data['gt_boxes']
             gt_class_list = data['gt_classes']
 
-            # TODO (Q2.3): perform forward pass, compute cls_probs
+            image = image.to(device)
+            target = target.to(device)
+            # wgt = wgt.to(device)
+            rois = rois.to(device)
 
+            # TODO (Q2.3): perform forward pass, compute cls_probs
+            imoutput = model(image, rois, target)
 
             # TODO (Q2.3): Iterate over each class (follow comments)
+            # for each class
+            # extract the bounding boxes for that image from highest scoring to lowest scoring
+            # match the ones
+            class_aps = []
             for class_num in range(20):
                 # get valid rois and cls_scores based on thresh
+                tp = 0
+                fp = 0
+                track_tp = []
+                track_fp = []
+                class_gt_indices = torch.where(gt_class_list == class_num)
+                class_gt_boxes = gt_boxes[class_gt_indices]
+                n_class_gt = len(class_gt_boxes)
 
                 # use NMS to get boxes and scores
-                pass
+                boxes, scores = nms(rois, imoutput[:, class_num])
+                if len(boxes) == 0:
+                    # we need not keep a count of false negatives otherwise this would have come here
+                    class_aps.append(0)
+                    continue
+                
+                if len(class_gt_boxes) == 0:
+                    # there are no gt boxes for this, thus we need not do anything about it
+                    # fp += len(boxes)
+                    class_aps.append(0)
+                    continue
 
-            # TODO (Q2.3): visualize bounding box predictions when required
-            calculate_map()
+                # now calculate the iou for all the boxes and 
+                iou_values = iou(boxes, class_gt_boxes)
+                
+                for idx in range(len(boxes)):
+                    # find the best gt_box for an iou
+                    max_ios_pos = iou_values[idx].argmax()
+                    # check if that value is greater than the threshold
+                    if iou_values[idx, max_ios_pos] >= thresh:
+                        iou_values[:, max_ios_pos] = -1 #since it should not be used again
+                        tp+=1
+                    else:
+                        fp+=1
+                    track_tp.append(tp)
+                    track_fp.append(fp)
+                
+                # TODO (Q2.3): visualize bounding box predictions when required
+                class_aps.append(calculate_map(track_tp, track_fp, n_class_gt))
 
 
 def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=None):
@@ -147,11 +235,22 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
             rois = data['rois']
             gt_boxes = data['gt_boxes']
             gt_class_list = data['gt_classes']
+            
+            # TODO Convert inputs to cuda if training on GPU
+            image = image.to(device)
+            target = target.to(device)
+            # wgt = wgt.to(device)
+            rois = rois.to(device)
+            # gt_boxes = gt_boxes.to(device)
+            # gt_class_list = gt_class_list.to(device)
+
+            # take care that proposal values should be in pixels
+            # multiply image size
+            image_size = image.shape[0]
+            rois = rois*image_size
 
             # TODO (Q2.2): perform forward pass
-            # take care that proposal values should be in pixels
-            # Convert inputs to cuda if training on GPU
-
+            imoutput = model(image, rois, target)
 
             # backward pass and update
             loss = model.loss
@@ -183,6 +282,7 @@ def main():
     args = parser.parse_args()
     # TODO (Q2.2): Load datasets and create dataloaders
     # Initialize wandb logger
+    set_up_wandb()
     train_dataset = VOCDataset(split='trainval',image_size = 512 , data_dir=data_directory)
     val_dataset = VOCDataset(split='test',image_size = 512 , data_dir=data_directory)
     
@@ -203,8 +303,9 @@ def main():
         pin_memory=True,
         drop_last=True)
 
-    # Create network and initialize
+    # Create network and initialize with AlexNet weights
     net = WSDDN(classes=train_dataset.CLASS_NAMES)
+    net = load_pretained_weights(net)
     print(net)
 
     if os.path.exists('pretrained_alexnet.pkl'):
@@ -235,9 +336,18 @@ def main():
     net.train()
 
     # TODO (Q2.2): Freeze AlexNet layers since we are loading a pretrained model
-
+    # do it in state dict
+    freeze_alexnet_weigths(net)
     # TODO (Q2.2): Create optimizer only for network parameters that are trainable
-    optimizer = None
+    params = list(net.classifier.parameters()) + list(net.score_fc.parameters()) + list(net.bbox_fc.parameters())
+    optimizer = torch.optim.SGD(params, lr = args.lr, momentum = args.momentum, weight_decay = args.weightDecay, nesterov = True)
 
     # Training
-    train_model(net, train_loader, optimizer, args)
+    train_model(net, train_loader, val_loader, optimizer, args)
+
+if __name__ == '__main__':
+    main()
+
+
+# Caveats
+# for MAP -> pick up GT for rois vs ROIS for GT

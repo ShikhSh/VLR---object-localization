@@ -3,6 +3,8 @@ import os
 import shutil
 import time
 from tkinter import image_names
+import matplotlib.pyplot as plt
+# import numpy as np
 
 import sklearn
 import sklearn.metrics
@@ -129,10 +131,9 @@ def set_up_wandb():
     if USE_WANDB:
         wandb.login(key="f123ce836f30a91233b673ad557cf57dfe08ef9d")
         run = wandb.init(
-            name = "vlr_hw1_trial", ### Wandb creates random run names if you skip this field, we recommend you give useful names
-            reinit=True, ### Allows reinitalizing runs when you re-run this cell
-            project="vlr_hw1"#, ### Project should be created in your wandb account 
-        #     config=config ### Wandb Config for your run
+            name = "vlr_hw1_trial",
+            reinit=True,
+            project="vlr_hw1"
         )
 
 def main():
@@ -175,7 +176,9 @@ def main():
             print("=> no checkpoint found at '{}'".format(args.resume))
 
     cudnn.benchmark = True
-
+    torch.manual_seed(0)
+    np.random.seed(0)
+    random.seed(0)
     # Data loading code
 
     # TODO (Q1.1): Create Datasets and Dataloaders using VOCDataset
@@ -249,17 +252,9 @@ def train(train_loader, model, criterion, optimizer, epoch):
     end = time.time()
     for i, (data) in enumerate(train_loader):
         # measure data loading time
-        # print(data[0][0])
-        # print(data[1][0])
-        # print(data[2][0])
-        # print(data[3][0])
-        # print(data[4][0])
-        # print(data[5][0])
         images = data[0]
         target = data[1]
-        # print("IamPrintingTarget!!**************************************")
-        # print(target)
-        
+
         data_time.update(time.time() - end)
         images = images.to(device)
         # TODO (Q1.1): Get inputs from the data dict
@@ -271,14 +266,9 @@ def train(train_loader, model, criterion, optimizer, epoch):
 
         # TODO (Q1.1): Perform any necessary operations on the output
         # max_pool_layer = nn.MaxPool2d(kernel_size=3, stride=2)
-        # print(imoutput.shape)
-        # F.max_pool2d(imoutput, kernel_size = (29,29))
         imoutput = torch.max(imoutput_whole, dim = 2)[0].max(2)[0]
 
         # TODO (Q1.1): Compute loss using ``criterion``
-        # print("SHAPES::::::::")
-        # print(imoutput.shape)
-        # print(target.shape)
         loss = criterion(imoutput, target)
 
         # measure metrics and record loss
@@ -297,8 +287,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
         batch_time.update(time.time() - end)
         end = time.time()
         wandb.log({'epoch': epoch, 'train/loss': loss})
-        #print("EPOCH:", epoch, " Loss:", loss)
-        # print("M2: ", avg_m2)
+
         if i % args.print_freq == 0:
             print("Epoch: ", epoch, ", ", i, "/", len(train_loader))
             print("Losses: ", losses.val, ", ", losses.avg)
@@ -325,11 +314,14 @@ def train(train_loader, model, criterion, optimizer, epoch):
         image_to_plot = images[21] # we are plotting the 21st image
         model_op_pltimg = imoutput_whole[21] # we get the scores for C classes for the 21st image
         model_op_pltimg = model_op_pltimg[0].detach().clone() # we choose class zero for image 21
+        
         # normalizing it between 0 and 1
-        min_val = model_op_pltimg.min()
-        max_val = model_op_pltimg.max()
-        model_op_pltimg = (model_op_pltimg - min_val) /(max_val - min_val)
+        # min_val = model_op_pltimg.min()
+        # max_val = model_op_pltimg.max()
+        # model_op_pltimg = (model_op_pltimg - min_val) /(max_val - min_val)
 
+        # PIL creates heat map
+        # plt.imshow and save and 
         img = wandb.Image(image_to_plot)
         heat_map = wandb.Image(model_op_pltimg)
         wandb.log({"train/image": img, "train/heat map": heat_map})
@@ -348,7 +340,6 @@ def validate(val_loader, model, criterion, epoch=0):
 
     end = time.time()
     for i, (data) in enumerate(val_loader):
-        # print(data)
         images = data[0]
         target = data[1]
         images = images.to(device)
@@ -397,13 +388,9 @@ def validate(val_loader, model, criterion, epoch=0):
             image_to_plot = images[21] # we are plotting the 21st image
             model_op_pltimg = imoutput[21] # we get the scores for C classes for the 21st image
             model_op_pltimg = model_op_pltimg[0].detach().clone() # we choose class zero for image 21
-            # normalizing it between 0 and 1
-            min_val = model_op_pltimg.min()
-            max_val = model_op_pltimg.max()
-            model_op_pltimg = (model_op_pltimg - min_val) /(max_val - min_val)
 
             img = wandb.Image(image_to_plot)
-            heat_map = wandb.Image(model_op_pltimg)
+            heat_map = wandb.Image(plot_heatplot(model_op_pltimg))
             wandb.log({"val/image": img, "val/heat map": heat_map})
         # TODO (Q1.3): Visualize at appropriate intervals
 
@@ -439,30 +426,30 @@ class AverageMeter(object):
         self.count += n
         self.avg = self.sum / self.count
 
-
+# sigmoid the outputs
 def metric1(output, target):
     # TODO (Q1.5): compute metric1
-    # print(target)
-    # print(output)
     count = 0.0
     m1 = 0.0
     for i in range(20):
         target_class_vals = target.cpu()[:, i]
         output_class_vals = output.cpu()[:, i]
-        if torch.count_nonzero(output_class_vals) == 0 and torch.count_nonzero(target_class_vals) == 0:
+        if torch.sum(output_class_vals) == 0 or torch.sum(target_class_vals) == 0:
             continue
-        m1 += sklearn.metrics.average_precision_score(target_class_vals, output_class_vals > 0.5)
+        m1 += sklearn.metrics.average_precision_score(target_class_vals, output_class_vals)
         count+=1
-    return m1/count#[0]
+    return m1/count
 
 
 def metric2(output, target):
     # TODO (Q1.5): compute metric2
-    # target_label = torch.argmax(target.cpu(), dim = 1)
-    # output_labels = torch.argmax(output.cpu(), dim = 1)
+    output = F.softmax(output, dim = 1)
     m2 = sklearn.metrics.recall_score(target.cpu() , output.cpu() > 0.5, average=None)
-    return m2#[0]
+    return m2
 
+def plot_heatplot(image_tensor):
+    image = plt.imshow(image_tensor, cmap='hot', norm = "linear", interpolation=None)#'nearest')
+    return image
 
 if __name__ == '__main__':
     main()

@@ -189,10 +189,16 @@ class VOCDataset(Dataset):
         box_scores = box_scores[sorted_indices]
         boxes = boxes[sorted_indices]
 
+        temp = boxes.copy()
+        boxes[:,0] = temp[:,1]
+        boxes[:,1] = temp[:,0]
+        boxes[:,2] = temp[:,3]
+        boxes[:,3] = temp[:,2]
+
         proposals = boxes[-self.top_n:].squeeze()
         if proposals.shape[0]<self.top_n:
             proposals_padding_len = self.top_n - proposals.shape[0]
-            proposals = np.pad(proposals, ((0,proposals_padding_len),(0,0)), constant_values = 0)
+            proposals = np.pad(proposals, ((0,proposals_padding_len),(0,0)), constant_values = -1)# constant value made -1 because classes are from 0 to 19
         proposals = torch.from_numpy(proposals)#None
         
 
@@ -200,10 +206,17 @@ class VOCDataset(Dataset):
         # print(box_scores)
 
         ret = {}
-        ret['image'] = img
-        ret['label'] = label
-        ret['wgt'] = wgt
-        ret['rois'] = proposals
-        ret['gt_boxes'] = torch.tensor(gt_boxes)
-        ret['gt_classes'] = torch.tensor(gt_class_list)
+        ret['image'] = img # for i image: 3 channels, size is 224x224
+        ret['label'] = label # for i image:present or absent for each class
+        ret['wgt'] = wgt # for i image:
+        ret['rois'] = proposals # for i image: N_rois(top_n) x 4 (dimensions of the box)
+        ret['gt_boxes'] = torch.tensor(gt_boxes) # for i image: N_gt (42 here) x 4
+        ret['gt_classes'] = torch.tensor(gt_class_list) # for i image: N_gt (42 here) x 4
         return ret
+
+# torch.Size([1, 3, 224, 224])
+# torch.Size([1, 20])
+# torch.Size([1, 20])
+# torch.Size([1, 10, 4])
+# torch.Size([1, 42, 4])
+# torch.Size([1, 42])

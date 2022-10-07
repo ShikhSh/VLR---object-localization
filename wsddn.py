@@ -7,8 +7,11 @@ import torch.utils.model_zoo as model_zoo
 import torch.nn.functional as F
 from torchvision.ops import roi_pool, roi_align
 
+device = torch.device('cpu')
+if torch.cuda.is_available():
+    device = torch.device("cuda")
 
-
+ROI_OUTPUT_DIM = 6
 
 class WSDDN(nn.Module):
     n_classes = 20
@@ -29,36 +32,41 @@ class WSDDN(nn.Module):
         # TODO (Q2.1): Define the WSDDN model
         self.features = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=(11, 11), stride=(4, 4), padding=(2, 2)),
-            nn.ReLU(),#(inplace=True),
+            nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), dilation=(1, 1), ceil_mode=False),
 
             nn.Conv2d(64, 192, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2)),
-            nn.ReLU(),#(inplace=True),
+            nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), dilation=(1, 1), ceil_mode=False),
 
             nn.Conv2d(192, 384, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
-            nn.ReLU(),#(inplace=True),
+            nn.ReLU(inplace=True),
 
             nn.Conv2d(384, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
-            nn.ReLU(),#(inplace=True),
+            nn.ReLU(inplace=True),
 
             nn.Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
-            nn.ReLU(),#(inplace=True)
+            nn.ReLU(inplace=True)
         )
         self.roi_pool = roi_pool
         self.classifier = nn.Sequential(
-            nn.Linear(12544, 4096),
-            nn.ReLU(),
+            nn.Dropout(p=0.5),
+            nn.Linear(256*ROI_OUTPUT_DIM*ROI_OUTPUT_DIM, 4096),
+            nn.ReLU(inplace=True),
+            nn.Dropout(p=0.5),
             nn.Linear(4096, 4096),
-            nn.ReLU()
+            nn.ReLU(inplace=True)
         )
         self.top_n = top_n
 
+        # basically, the output dimensions of this is number of classes because we feed in ROIS for an image,
+        # thus, the batch here is anologous to rois
+        # thus the output from this rois layer would finally be N_rois * classes, because the input sequence length is N_rois long
         self.score_fc = nn.Sequential(
-            nn.Linear(4096, self.top_n*self.n_classes),
+            nn.Linear(4096, self.n_classes) #self.top_n*self.n_classes),
         )
         self.bbox_fc = nn.Sequential(
-            nn.Linear(4096, self.top_n*self.n_classes),
+            nn.Linear(4096, self.n_classes) #self.top_n*self.n_classes),
         )
 
         # loss
@@ -68,32 +76,42 @@ class WSDDN(nn.Module):
     def loss(self):
         return self.cross_entropy
 
-    def forward(self,
-                image,
-                rois=None,
-                gt_vec=None,
-                ):
+    def forward(self, image, rois=None, target_labels=None):
+        """Define the forward function for 1 image
 
+        :image: image_size x image_size image
+        :rois: N_rois x 4 boxes with their positions
+        :gt_vec: N_gt(if padded - 42) x 4, again boxes with positions
+        
+        :returns: N_rois x n_class vector, where the class score for each vector is defined
 
+        """
+        
         # TODO (Q2.1): Use image and rois as input
-        # compute cls_prob which are N_roi X 20 scores
         features = self.features(image)
-        roi_features = self.roi_pool(features, boxes = rois, output_size = (12,12), spatial_scale = 1.0)
+
+        input_dims = image.shape[0]
+        
+
+        roi_features = self.roi_pool(features, boxes = rois, output_size = (ROI_OUTPUT_DIM,ROI_OUTPUT_DIM), spatial_scale = 1.0*ROI_OUTPUT_DIM/input_dims)
         flattened_features = torch.flatten(roi_features, start_dim=1)
         lin_model_out = self.classifier(flattened_features)
-        score1 = F.softmax(self.score_fc(lin_model_out), dim = 0)
+        score1 = F.softmax(self.bbox_fc(lin_model_out), dim = 0)
         score2 = F.softmax(self.score_fc(lin_model_out), dim = 1)
 
         cls_prob = torch.mul(score1, score2).clamp(0, 1)
 
 
         if self.training:
-            label_vec = gt_vec.view(self.n_classes, -1)
+            label_vec = target_labels.view(self.n_classes, -1)
             self.cross_entropy = self.build_loss(cls_prob, label_vec)
+
+        # return cls_prob which are N_roi X 20 scores
         return cls_prob
 
     def build_loss(self, cls_prob, label_vec):
         """Computes the loss
+        The loss is computed using the sum of class probs over ROIs and the labels
 
         :cls_prob: N_roix20 output scores
         :label_vec: 1x20 one hot label vector
@@ -103,6 +121,16 @@ class WSDDN(nn.Module):
         # TODO (Q2.1): Compute the appropriate loss using the cls_prob
         # that is the output of forward()
         # Checkout forward() to see how it is called
-        loss = None
+        
+        # we find the sum of the class prob for each region of interest for an image
+        # essentially we would have the sum of probabilities for each of classes
+        # calculate the BCE loss on the label vector and the probabilities
+        # BCE loss can handle he probabilities, 
+        cls_prob = torch.sum(cls_prob, dim=0)
+        # cls_prob = F.softmax(cls_prob)
+        loss = nn.BCELoss(cls_prob, label_vec, reduction='sum').to(device)
 
         return loss
+
+# Caveats:
+# N/A: Used Softmax in build loss, can try clamp too -> removed since i am clamping the outputs in the forward function itself
