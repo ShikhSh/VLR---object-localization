@@ -102,7 +102,7 @@ class WSDDN(nn.Module):
         print(roi_features.shape)
         flattened_features = torch.flatten(roi_features, start_dim=1)
         print(flattened_features.shape)
-        lin_model_out = self.classifier(flattened_features)
+        lin_model_out = self.classifier(flattened_features.cuda())
         score1 = F.softmax(self.bbox_fc(lin_model_out), dim = 0)
         score2 = F.softmax(self.score_fc(lin_model_out), dim = 1)
 
