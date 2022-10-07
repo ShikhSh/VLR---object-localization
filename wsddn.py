@@ -135,6 +135,8 @@ class WSDDN(nn.Module):
         # calculate the BCE loss on the label vector and the probabilities
         # BCE loss can handle he probabilities, 
         cls_prob = torch.sum(cls_prob, dim=0)
+        print("printiingLOSSSSS:::::::::")
+        print(cls_prob.shape)
         # cls_prob = F.softmax(cls_prob)
         loss = nn.BCELoss(cls_prob, label_vec, reduction='sum').to(device)
 
