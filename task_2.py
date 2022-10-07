@@ -187,7 +187,8 @@ def test_model(model, val_loader=None, thresh=0.05):
             rois = data['rois']
             gt_boxes = data['gt_boxes']
             gt_class_list = data['gt_classes']
-
+            print("IamprintingGTclasses")
+            print(gt_class_list)
             image = image.to(device)
             target = target.to(device)
             # wgt = wgt.to(device)
@@ -196,7 +197,12 @@ def test_model(model, val_loader=None, thresh=0.05):
             rois = rois*image_size
 
             # TODO (Q2.3): perform forward pass, compute cls_probs
+            print(image)
+            print(rois)
+            print(target)
             imoutput = model(image, rois, target)
+            print("output")
+            print(imoutput)
             # tmp = torch.where(imoutput>thresh)
             # if len(tmp)>0:
             #     print("VALID INDICES")
@@ -208,6 +214,7 @@ def test_model(model, val_loader=None, thresh=0.05):
             
             for class_num in range(20):
                 # get valid rois and cls_scores based on thresh
+                print("Looking for class",str(class_num))
                 tp = 0
                 fp = 0
                 track_tp = []
@@ -219,20 +226,20 @@ def test_model(model, val_loader=None, thresh=0.05):
                 trial = torch.where(imoutput[:, class_num]>thresh)
                 if len(trial)>0:
                     print("hurra")
-                    print(trial)
+                    # print(trial)
                 # use NMS to get boxes and scores
                 boxes, scores = nms(rois, imoutput[:, class_num])
                 if len(boxes) == 0:
                     # we need not keep a count of false negatives otherwise this would have come here
                     class_aps.append(0)
-                    # print("EXITING1")
+                    print("EXITING1")
                     continue
                 
                 if len(class_gt_boxes) == 0:
                     # there are no gt boxes for this, thus we need not do anything about it
                     fp += len(boxes)
                     class_aps.append(0)
-                    # print("EXITING2")
+                    print("EXITING2")
                     continue
 
                 # now calculate the iou for all the boxes and 
@@ -255,6 +262,7 @@ def test_model(model, val_loader=None, thresh=0.05):
                 # TODO (Q2.3): visualize bounding box predictions when required
                 map_ = calculate_map(track_tp, track_fp, n_class_gt)
                 class_aps.append(map_)
+            break
 
     print("class APs: ")
     print(class_aps)

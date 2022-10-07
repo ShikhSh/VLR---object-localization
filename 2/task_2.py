@@ -205,10 +205,15 @@ def test_model(model, val_loader=None, thresh=0.05):
             rois = torch.stack([torch.as_tensor(x) for x in data['rois']], dim=0)
             gt_boxes = torch.stack([torch.as_tensor(x) for x in data['gt_boxes']], dim=0).squeeze(dim=0)
             gt_class_list = torch.stack([torch.as_tensor(x) for x in data['gt_classes']], dim=0).squeeze(dim=0)
-
+            print("IamprintingGTclasses")
+            print(gt_class_list)
+            print(image)
+            print(rois*img_size)
+            print(target)
             # TODO (Q2.3): perform forward pass, compute cls_probs
             cls_scores = model(image.cuda(), rois*img_size, target.cuda())
-            
+            print("output")
+            print(cls_scores)
             # tmp = torch.where(cls_scores>thresh)
             # if len(tmp)>0:
             #     print("VALID INDICES")
@@ -216,12 +221,14 @@ def test_model(model, val_loader=None, thresh=0.05):
             # TODO (Q2.3): Iterate over each class (follow comments)
             for class_num in range(20):
                 # get valid rois and cls_scores
+                print("Looking for class",str(class_num))
                 scores = cls_scores[:, class_num]
                 boxes = rois.squeeze()[:,:]
 
                 trial = torch.where(cls_scores[:, class_num]>thresh)
                 if len(trial)>0:
                     print("hurra")
+                    print(trial)
                 # finding the number of gt boxes for the current class (useful for computing recall)
                 curr_gt_boxes = None
                 if target[0, class_num] == 1:
@@ -254,11 +261,13 @@ def test_model(model, val_loader=None, thresh=0.05):
                             ious[:, iou_idx_max] = 0
                             match_found = True
                     boxes_match_score[class_num].append({'match':match_found, 'score':scores[idx].item()})
+                print(match_found)
                 
 
 
             # TODO (Q2.3): visualize bounding box predictions when required
                 progress_bar.update(1)
+            break
     
     AP = calculate_map(num_gt_boxes, boxes_match_score)
 
