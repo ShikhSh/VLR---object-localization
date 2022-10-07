@@ -191,10 +191,8 @@ class WSDDN(nn.Module):
             self.cross_entropy = self.build_loss(cls_prob, label_vec)
         return cls_prob
 
-
     def build_loss(self, cls_prob, label_vec):
         """Computes the loss
-        The loss is computed using the sum of class probs over ROIs and the labels
 
         :cls_prob: N_roix20 output scores
         :label_vec: 1x20 one hot label vector
@@ -204,21 +202,37 @@ class WSDDN(nn.Module):
         # TODO (Q2.1): Compute the appropriate loss using the cls_prob
         # that is the output of forward()
         # Checkout forward() to see how it is called
-        
-        # we find the sum of the class prob for each region of interest for an image
-        # essentially we would have the sum of probabilities for each of classes
-        # calculate the BCE loss on the label vector and the probabilities
-        # BCE loss can handle he probabilities, 
-        cls_prob = torch.reshape(torch.sum(cls_prob, dim=0).clamp(0.0, 1.0),(-1,1))
-        # print(cls_prob)
-        # print(label_vec)
-        # print("printiingLOSSSSS:::::::::")
-        # print(cls_prob.shape)
-        # print(label_vec.shape)
-        # cls_prob = F.softmax(cls_prob)
-        loss = F.binary_cross_entropy(cls_prob, label_vec, reduction='sum')#.to(device)
-
+        cls_prob = torch.sum(cls_prob, dim=0).unsqueeze(1)
+        cls_prob = torch.clamp(cls_prob, 0., 1.)
+        loss = F.binary_cross_entropy(cls_prob, label_vec, reduction='sum')
         return loss
+    # def build_loss(self, cls_prob, label_vec):
+    #     """Computes the loss
+    #     The loss is computed using the sum of class probs over ROIs and the labels
+
+    #     :cls_prob: N_roix20 output scores
+    #     :label_vec: 1x20 one hot label vector
+    #     :returns: loss
+
+    #     """
+    #     # TODO (Q2.1): Compute the appropriate loss using the cls_prob
+    #     # that is the output of forward()
+    #     # Checkout forward() to see how it is called
+        
+    #     # we find the sum of the class prob for each region of interest for an image
+    #     # essentially we would have the sum of probabilities for each of classes
+    #     # calculate the BCE loss on the label vector and the probabilities
+    #     # BCE loss can handle he probabilities, 
+    #     cls_prob = torch.reshape(torch.sum(cls_prob, dim=0).clamp(0.0, 1.0),(-1,1))
+    #     # print(cls_prob)
+    #     # print(label_vec)
+    #     # print("printiingLOSSSSS:::::::::")
+    #     # print(cls_prob.shape)
+    #     # print(label_vec.shape)
+    #     # cls_prob = F.softmax(cls_prob)
+    #     loss = F.binary_cross_entropy(cls_prob, label_vec, reduction='sum')#.to(device)
+
+    #     return loss
 
 # Caveats:
 # N/A: Used Softmax in build loss, can try clamp too -> removed since i am clamping the outputs in the forward function itself
