@@ -259,7 +259,7 @@ def test_model(model, val_loader=None, thresh=0.05):
 
             # TODO (Q2.3): visualize bounding box predictions when required
                 progress_bar.update(1)
-            break
+            # break
     AP = calculate_map(num_gt_boxes, boxes_match_score)
 
     return AP
