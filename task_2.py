@@ -193,8 +193,8 @@ def test_model(model, val_loader=None, thresh=0.05):
             target = target.to(device)
             # wgt = wgt.to(device)
             rois = torch.stack([torch.as_tensor(x) for x in data['rois']], dim=0)
-            image_size = image.shape[0]
-            rois = rois*image_size
+            # image_size = image.shape[0]
+            rois = rois*512
 
             # TODO (Q2.3): perform forward pass, compute cls_probs
             print(image)
@@ -226,7 +226,7 @@ def test_model(model, val_loader=None, thresh=0.05):
                 trial = torch.where(imoutput[:, class_num]>thresh)
                 if len(trial)>0:
                     print("hurra")
-                    # print(trial)
+                    print(trial)
                 # use NMS to get boxes and scores
                 boxes, scores = nms(rois, imoutput[:, class_num])
                 if len(boxes) == 0:
@@ -301,7 +301,7 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
             # take care that proposal values should be in pixels
             # multiply image size
             image_size = image.shape[0]
-            rois = rois*image_size
+            rois = rois*512
 
             # TODO (Q2.2): perform forward pass
             imoutput = model(image, rois, target)
