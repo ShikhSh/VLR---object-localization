@@ -243,7 +243,7 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
             image = image.to(device)
             target = target.to(device)
             # wgt = wgt.to(device)
-            rois = map(lambda x: x.to(device), rois)#, to(device))
+            rois = list(map(lambda x: x.to(device), rois))#, to(device))
             # gt_boxes = gt_boxes.to(device)
             # gt_class_list = gt_class_list.to(device)
 
