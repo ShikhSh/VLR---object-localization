@@ -36,8 +36,8 @@ def nms(bounding_boxes, confidence_score, threshold=0.05, iou_threshold = 0.3):
 
     while len(conf_sc)>0:
         best_bbox = torch.unsqueeze(b_boxes[0], dim = 0)
-        print(best_score)
         best_score = conf_sc[0]
+        print(best_score)
         if best_score < threshold:
             break
         boxes = torch.cat((boxes, best_bbox))
