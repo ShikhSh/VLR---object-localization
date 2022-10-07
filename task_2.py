@@ -444,7 +444,7 @@ def main():
         drop_last=True)
 
     # Create network and initialize with AlexNet weights
-    net = WSDDN2(classes=train_dataset.CLASS_NAMES)
+    net = WSDDN(classes=train_dataset.CLASS_NAMES)
     # net = load_pretained_weights(net)
     print(net)
 
@@ -458,8 +458,9 @@ def main():
     own_state = net.state_dict()
 
     for name, param in pret_net.items():
-        print(name)
+        
         if name not in own_state:
+            print(name)
             continue
         if isinstance(param, Parameter):
             param = param.data
