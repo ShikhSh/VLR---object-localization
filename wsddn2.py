@@ -75,8 +75,9 @@ class WSDDN2(nn.Module):
         feature_dim = x.shape[-1]*1.0
 
         # print(f'rois.shape {rois.shape}')
-        rois = rois.squeeze()
-        x = self.roi_pool(x, [rois.type('torch.FloatTensor').cuda()], output_size=6, spatial_scale=feature_dim/inp_size) # 300x256x7x7 [N_roi X C X OUT X OUT]
+        # rois = rois.squeeze()
+        # [rois.type('torch.FloatTensor').cuda()]
+        x = self.roi_pool(x, rois, output_size=6, spatial_scale=feature_dim/inp_size) # 300x256x7x7 [N_roi X C X OUT X OUT]
         x = x.flatten(start_dim=1)
         x = self.classifier(x) # (N_roi X 4096)
         
