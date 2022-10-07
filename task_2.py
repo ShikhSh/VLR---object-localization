@@ -293,7 +293,7 @@ def main():
         train_dataset,
         batch_size=1,   # batchsize is one for this implementation
         shuffle=True,
-        num_workers=4,
+        # num_workers=4,
         pin_memory=True,
         sampler=None,
         drop_last=True)
@@ -302,7 +302,7 @@ def main():
         val_dataset,
         batch_size=1,
         shuffle=False,
-        num_workers=4,
+        # num_workers=4,
         pin_memory=True,
         drop_last=True)
 
