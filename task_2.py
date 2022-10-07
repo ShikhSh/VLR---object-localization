@@ -27,7 +27,7 @@ data_directory = '../VOCdevkit/VOC2007/'
 USE_WANDB = True
 # hyper-parameters
 # ------------
-parser = argparse.ArgumentParser(help='PyTorch ImageNet Training')
+parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
 parser.add_argument(
     '--lr',
     default=0.0001,
