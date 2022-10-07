@@ -444,8 +444,8 @@ def main():
         drop_last=True)
 
     # Create network and initialize with AlexNet weights
-    net = WSDDN2(classes=train_dataset.CLASS_NAMES)
-    net = load_pretained_weights(net)
+    net = WSDDN(classes=train_dataset.CLASS_NAMES)
+    # net = load_pretained_weights(net)
     print(net)
 
     if os.path.exists('pretrained_alexnet.pkl'):
