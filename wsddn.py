@@ -257,10 +257,50 @@ class WSDDN(nn.Module):
         'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor'
     ])
 
-    def __init__(self, classes=classes):
-        super(WSDDN, self).__init__()
+    # def __init__(self, classes=classes):
+    #     super(WSDDN, self).__init__()
 
-        print(f'classes {classes}')
+    #     print(f'classes {classes}')
+
+    #     if classes is not None:
+    #         self.classes = classes
+    #         self.n_classes = len(classes)
+    #         print(classes)
+
+    #     # TODO (Q2.1): Define the WSDDN model
+    #     self.features = nn.Sequential(
+    #       nn.Conv2d(in_channels=3, out_channels=64, kernel_size=(11, 11), stride=(4, 4), padding=(2, 2)),
+    #       nn.ReLU(inplace=True),
+    #       nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), dilation=(1, 1), ceil_mode=False),
+    #       nn.Conv2d(64, 192, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2)),
+    #       nn.ReLU(inplace=True),
+    #       nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), dilation=(1, 1), ceil_mode=False),
+    #       nn.Conv2d(192, 384, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
+    #       nn.ReLU(inplace=True),
+    #       nn.Conv2d(384, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
+    #       nn.ReLU(inplace=True),
+    #       nn.Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
+    #       nn.ReLU(inplace=True)
+    #     )
+    #     self.roi_pool = roi_pool
+    #     self.classifier =  nn.Sequential(
+    #         nn.Dropout(p=0.5),
+    #         nn.Linear(in_features=6*6*256, out_features=4096),
+    #         nn.ReLU(inplace=True),
+    #         nn.Dropout(),
+    #         nn.Linear(4096, 4096),
+    #         nn.ReLU(inplace=True),
+    #     )
+
+    #     self.score_fc   = nn.Linear(4096, len(classes))
+    #     self.bbox_fc    = nn.Linear(4096, len(classes))
+
+    #     # loss
+    #     self.cross_entropy = None
+
+
+    def __init__(self, classes=None, top_n = 300):
+        super(WSDDN, self).__init__()
 
         if classes is not None:
             self.classes = classes
@@ -269,34 +309,47 @@ class WSDDN(nn.Module):
 
         # TODO (Q2.1): Define the WSDDN model
         self.features = nn.Sequential(
-          nn.Conv2d(in_channels=3, out_channels=64, kernel_size=(11, 11), stride=(4, 4), padding=(2, 2)),
-          nn.ReLU(inplace=True),
-          nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), dilation=(1, 1), ceil_mode=False),
-          nn.Conv2d(64, 192, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2)),
-          nn.ReLU(inplace=True),
-          nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), dilation=(1, 1), ceil_mode=False),
-          nn.Conv2d(192, 384, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
-          nn.ReLU(inplace=True),
-          nn.Conv2d(384, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
-          nn.ReLU(inplace=True),
-          nn.Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
-          nn.ReLU(inplace=True)
+            nn.Conv2d(3, 64, kernel_size=(11, 11), stride=(4, 4), padding=(2, 2)),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), dilation=(1, 1), ceil_mode=False),
+
+            nn.Conv2d(64, 192, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2)),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), dilation=(1, 1), ceil_mode=False),
+
+            nn.Conv2d(192, 384, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
+            nn.ReLU(inplace=True),
+
+            nn.Conv2d(384, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
+            nn.ReLU(inplace=True),
+
+            nn.Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
+            nn.ReLU(inplace=True)
         )
         self.roi_pool = roi_pool
-        self.classifier =  nn.Sequential(
+        self.classifier = nn.Sequential(
             nn.Dropout(p=0.5),
-            nn.Linear(in_features=6*6*256, out_features=4096),
+            nn.Linear(in_features=9216, out_features=4096),#256*ROI_OUTPUT_DIM*ROI_OUTPUT_DIM, out_features=4096),
             nn.ReLU(inplace=True),
-            nn.Dropout(),
+            nn.Dropout(p=0.5),
             nn.Linear(4096, 4096),
-            nn.ReLU(inplace=True),
+            nn.ReLU(inplace=True)
         )
+        self.top_n = top_n
 
-        self.score_fc   = nn.Linear(4096, len(classes))
-        self.bbox_fc    = nn.Linear(4096, len(classes))
+        # basically, the output dimensions of this is number of classes because we feed in ROIS for an image,
+        # thus, the batch here is anologous to rois
+        # thus the output from this rois layer would finally be N_rois * classes, because the input sequence length is N_rois long
+        self.score_fc = nn.Sequential(
+            nn.Linear(4096, self.n_classes) #self.top_n*self.n_classes),
+        )
+        self.bbox_fc = nn.Sequential(
+            nn.Linear(4096, self.n_classes) #self.top_n*self.n_classes),
+        )
 
         # loss
         self.cross_entropy = None
+
 
     @property
     def loss(self):
