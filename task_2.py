@@ -394,6 +394,8 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
 
             # TODO (Q2.4): Perform all visualizations here
             # The intervals for different things are defined in the handout
+        tl = 1.0*train_loss/step_cnt
+        print("TRAINLOSS:::::::::::::::::::::::::::::::::::", str(tl))
         if epoch == 0 or epoch == args.epochs-1:
             plot_images(model, val_loader)
         aps = test_model(model, val_loader)
