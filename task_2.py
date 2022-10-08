@@ -50,7 +50,7 @@ if torch.cuda.is_available():
     device = torch.device("cuda")
 
 data_directory = '../VOCdevkit/VOC2007/'
-USE_WANDB = True
+USE_WANDB = False
 # hyper-parameters
 # ------------
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
