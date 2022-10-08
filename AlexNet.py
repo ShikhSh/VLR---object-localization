@@ -52,7 +52,11 @@ class LocalizerAlexNet(nn.Module):
         # TODO (Q1.1): Define forward pass
         out = self.features(x)
         out = self.classifier(out)
+        print("in alex netttttttt")
+        print(out)
         out = torch.max(out, dim = 2)[0].max(2)[0]
+        print("afterrrrr")
+        print(out)
         return out
 
 
