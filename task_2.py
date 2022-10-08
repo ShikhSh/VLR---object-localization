@@ -11,6 +11,7 @@ import numpy as np
 from datetime import datetime
 import torchvision.models as models
 import pickle as pkl
+# import numpy as np
 
 from wsddn import WSDDN
 from wsddn2 import WSDDN2
@@ -50,7 +51,7 @@ if torch.cuda.is_available():
     device = torch.device("cuda")
 
 data_directory = '../VOCdevkit/VOC2007/'
-USE_WANDB = False
+USE_WANDB = True#False
 # hyper-parameters
 # ------------
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
@@ -206,9 +207,9 @@ def calculate_map(overall_tp, overall_fp, overall_gt, over_all_scores):
         # sorted_indices = np.argsort(mrec)
         # mrec = mrec[sorted_indices]
         # mpre = mpre[sorted_indices]
-        ap1 = sklearn.metrics.auc(mrec, mpre)
+        # ap1 = sklearn.metrics.auc(mrec, mpre)
         ap = sum([(mrec[i] - mrec[i-1])*np.max(mpre[i:]) for i in range(1, len(mpre))]) # compute AP for the class
-        print("APssssssssssssss:::::::::::::::", str(ap1), " , ", str(ap))
+        print("APssssssssssssss:::::::::::::::", str(ap))#, str(ap1), " , ", str(ap))
         all_ap.append(ap)
 
     assert len(all_ap) == 20
@@ -431,74 +432,127 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
     # TODO (Q2.4): Plot class-wise APs
 
 
-def get_img_plotting_data(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
-    images_to_plot = [2,4,7,9,10]
-    images = []
-    bounding_boxes = []
-    classes = []
+def plot_graph_2(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
+    """
+    Tests the networks and visualizes the detections
+    :param thresh: Confidence threshold
+    """
+    count = 0
+    coalated_data = []
     with torch.no_grad():
         for iter, data in enumerate(val_loader):
-            curr_bounding_boxes = []
-            curr_classes = []
-            if iter>8:
-                break
+
             # one batch = data for one image
             image = data['image']
             target = data['label']
+            # wgt = data['wgt']
             rois = data['rois']
             gt_boxes = data['gt_boxes']
             gt_class_list = data['gt_classes']
-
+            # print("IamprintingGTclasses", str(iter))
+            # print(gt_class_list)
             image = image.to(device)
             target = target.to(device)
+            # wgt = wgt.to(device)
             rois = torch.stack([torch.as_tensor(x) for x in data['rois']], dim=0)
-            image_size = image.shape[0]
-            rois = rois*image_size
-
+            # image_size = image.shape[0]
+            rois = rois*512
+            gt_boxes = gt_boxes *512
             # TODO (Q2.3): perform forward pass, compute cls_probs
+            # print(image)
+            # print(rois)
+            # print(target)
             imoutput = model(image, rois, target)
+            # print("output")
+            # print(imoutput)
+            # tmp = torch.where(imoutput>thresh)
+            # if len(tmp)>0:
+            #     print("VALID INDICES")
 
             # TODO (Q2.3): Iterate over each class (follow comments)
             # for each class
             # extract the bounding boxes for that image from highest scoring to lowest scoring
             # match the ones
-            
+            boxes_to_plot = []
+            corresponding_classes = []
             for class_num in range(20):
                 # get valid rois and cls_scores based on thresh
+                # print("Looking for class",str(class_num), " = ", str(iter))
+                # track_tp = []
+                # track_fp = []
                 class_gt_indices = torch.where(gt_class_list == class_num)
                 class_gt_boxes = gt_boxes[class_gt_indices]
-
+                # n_class_gt = len(class_gt_boxes)
+                # overall_gt[class_num].append(n_class_gt)
+                # trial = torch.where(imoutput[:, class_num]>thresh)
+                # if len(trial)>0:
+                    # print("hurra")
+                    # print(trial)
                 # use NMS to get boxes and scores
                 boxes, scores = nms(rois, imoutput[:, class_num])
                 if len(boxes) == 0:
+                    # we need not keep a count of false negatives otherwise this would have come here
+                    # class_aps.append(0)
+                    # overall_tp[class_num].append(0)
+                    # overall_fp[class_num].append()
+                    # overall_gt[class_num].append(n_class_gt)
+                    # print("EXITING1")
                     continue
                 
-                if len(class_gt_boxes) == 0:
-                    continue
+                # if len(class_gt_boxes) == 0:
+                #     # there are no gt boxes for this, thus we need not do anything about it
+                #     fp += len(boxes)
+                #     # class_aps.append(0)
+                #     overall_tp[class_num].append(tp)
+                #     overall_fp[class_num].append(fp)
+                #     overall_gt[class_num].append(0)
+                #     # print("EXITING2")
+                #     continue
 
                 # now calculate the iou for all the boxes and 
-                iou_values = iou(boxes, class_gt_boxes)
-                
-                for idx in range(len(boxes)):
-                    # find the best gt_box for an iou
-                    max_ios_pos = iou_values[idx].argmax()
-                    # check if that value is greater than the threshold
-                    if iou_values[idx, max_ios_pos] >= iou_threshold:
-                        iou_values[:, max_ios_pos] = -1 #since it should not be used again
-                        curr_bounding_boxes.append(boxes[idx])
-                        curr_classes.append(class_num)
-            images.append(image)
-            bounding_boxes.append(curr_bounding_boxes)
-            classes.append(curr_classes)
-            
+                # print("here-----------------------iouuuuu------------")
+                # print(boxes)
+                # print(class_gt_boxes)
 
-    
-    return images, bounding_boxes, classes
+                # sorting the boxes according to scores:
+                indices = np.argsort(scores) # ascending order 
+                indices = np.flip(indices)
+
+                boxes = boxes[indices]
+
+                iou_values = None
+                if len(class_gt_boxes) > 0:
+                    iou_values = iou(boxes, class_gt_boxes)
+
+                for i in range(len(boxes)):
+                    # find the best gt_box for an iou
+                    # tp = 0
+                    # fp = 0
+                    # print(iou_values[i])
+                    current_box = boxes[i]
+                    if len(class_gt_boxes) > 0 and (not iou_values is None):
+                        max_ios_pos = iou_values[i].argmax()
+                        # check if that value is greater than the threshold
+                        if iou_values[i, max_ios_pos] >= iou_threshold:
+                            iou_values[:, max_ios_pos] = -1 #since it should not be used again
+                            boxes_to_plot.append(current_box)
+                            corresponding_classes.append(class_num)
+                if len(boxes_to_plot)>0:
+                    count += 1
+                    coalated_data.append({
+                        "image": image,
+                        "boxes": boxes_to_plot,
+                        "classes": corresponding_classes
+                    })
+                if count > 12:
+                    break
+    return coalated_data
 
 def plot_images(model, val_loader):
 
-    images, roises, classes = get_img_plotting_data(model, val_loader)
-    for image,rois, class_ in zip(images, roises, classes):
+    coalated_data = plot_graph_2(model, val_loader)
+    for i, data in enumerate(coalated_data):
+        image, rois, classes = data["image"], data["boxes"], data["classes"]
         class_id_to_label = dict(enumerate(CLASS_NAMES))
 
         # TODO: load the GT information corresponding to index 2020.
@@ -508,13 +562,13 @@ def plot_images(model, val_loader):
         if USE_WANDB:
             unsup_img = wandb.Image(original_image, boxes={
                 "predictions": {
-                    "box_data": get_box_data(class_, rois),
+                    "box_data": get_box_data(classes, rois),
                     "class_labels": class_id_to_label,
                 },
             })
 
             # TODO: log the GT bounding box
-            log_on_wandb({"image{i}": unsup_img})
+            log_on_wandb({"image": unsup_img})
             # wandb.log({"image{i}": unsup_img})
 
 def main():
