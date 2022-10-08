@@ -450,7 +450,7 @@ def plot_graph_2(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
     Tests the networks and visualizes the detections
     :param thresh: Confidence threshold
     """
-    print("plotgraphs")
+    # print("plotgraphs")
     count = 0
     coalated_data = []
     with torch.no_grad():
@@ -487,7 +487,7 @@ def plot_graph_2(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
                 boxes, scores = nms(rois, imoutput[:, class_num], iou_threshold = 0.001)
                 if len(boxes) == 0:
                     continue
-                print("survived")
+                # print("survived")
 
                 iou_values = None
                 if len(class_gt_boxes) > 0:
@@ -510,14 +510,14 @@ def plot_graph_2(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
                         "classes": corresponding_classes
                     })
                 if count > 12:
-                    print("breakinggg")
+                    # print("breakinggg")
                     break
     return coalated_data
 
 def plot_images(model, val_loader):
     print("plotting_images")
     coalated_data = plot_graph_2(model, val_loader)
-    print(coalated_data)
+    # print(coalated_data)
     for i, data in enumerate(coalated_data):
         
         image, rois, classes = data["image"], data["boxes"], data["classes"]
@@ -534,7 +534,7 @@ def plot_images(model, val_loader):
                     "class_labels": class_id_to_label,
                 },
             })
-            print(unsup_img)
+            # print(unsup_img)
             # TODO: log the GT bounding box
             log_on_wandb({"image": unsup_img})
             # wandb.log({"image{i}": unsup_img})
