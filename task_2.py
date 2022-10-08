@@ -274,7 +274,7 @@ def test_model(model, val_loader=None, thresh=0.05):
 
                 # now calculate the iou for all the boxes and 
                 print("here-----------------------iouuuuu------------")
-                print(boxes.shape)
+                print(boxes)
                 print(class_gt_boxes)
                 iou_values = iou(boxes, class_gt_boxes)
                 print(iou_values)
