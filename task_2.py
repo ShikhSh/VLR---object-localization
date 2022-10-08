@@ -180,10 +180,10 @@ def calculate_map(overall_tp, overall_fp, overall_gt):
         n_class_gt[n_class_gt==0] = 1
         sum_ = (track_tp+track_fp)
         sum_[sum_==0] = 1
-        print("---------------precision and recall-------------------")
-        print(track_tp)
-        print(track_fp)
-        print(n_class_gt)
+        # print("---------------precision and recall-------------------")
+        # print(track_tp)
+        # print(track_fp)
+        # print(n_class_gt)
 
         recall = 1.0*track_tp/tot_gt_boxes#n_class_gt
         precision = 1.0*track_tp/sum_

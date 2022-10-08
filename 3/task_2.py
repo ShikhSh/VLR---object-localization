@@ -162,6 +162,9 @@ def calculate_map(num_gt_boxes, boxes_match_score):
             recalls.append(recall)
         precisions.append(0.0)
         recalls.append(1.0) # at the end, append 0 precision and 1 recall, to account for the other end of precision-recall curve
+        print("---------------precision and recall-------------------")
+        print(precisions)
+        print(recalls)
         ap = sum([(recalls[i] - recalls[i-1])*np.max(precisions[i:]) for i in range(1, len(precisions))]) # compute AP for the class
 
         AP[class_num] = ap
