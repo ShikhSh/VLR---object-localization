@@ -212,7 +212,7 @@ def test_model(model, val_loader=None, thresh=0.05):
             rois = data['rois']
             gt_boxes = data['gt_boxes']
             gt_class_list = data['gt_classes']
-            print("IamprintingGTclasses")
+            print("IamprintingGTclasses", str(iter))
             print(gt_class_list)
             image = image.to(device)
             target = target.to(device)
@@ -239,7 +239,7 @@ def test_model(model, val_loader=None, thresh=0.05):
             
             for class_num in range(20):
                 # get valid rois and cls_scores based on thresh
-                print("Looking for class",str(class_num))
+                print("Looking for class",str(class_num), " = ", str(iter))
                 tp = 0
                 fp = 0
                 # track_tp = []
@@ -249,8 +249,8 @@ def test_model(model, val_loader=None, thresh=0.05):
                 n_class_gt = len(class_gt_boxes)
 
                 trial = torch.where(imoutput[:, class_num]>thresh)
-                if len(trial)>0:
-                    print("hurra")
+                # if len(trial)>0:
+                    # print("hurra")
                     # print(trial)
                 # use NMS to get boxes and scores
                 boxes, scores = nms(rois, imoutput[:, class_num])
@@ -260,7 +260,7 @@ def test_model(model, val_loader=None, thresh=0.05):
                     overall_tp[i].append(tp)
                     overall_fp[i].append(fp)
                     overall_gt[i].append(n_class_gt)
-                    print("EXITING1")
+                    # print("EXITING1")
                     continue
                 
                 if len(class_gt_boxes) == 0:
@@ -270,13 +270,13 @@ def test_model(model, val_loader=None, thresh=0.05):
                     overall_tp[i].append(tp)
                     overall_fp[i].append(fp)
                     overall_gt[i].append(1)
-                    print("EXITING2")
+                    # print("EXITING2")
                     continue
 
                 # now calculate the iou for all the boxes and 
                 print("here-----------------------iouuuuu------------")
-                # print(boxes)
-                # print(class_gt_boxes)
+                print(boxes)
+                print(class_gt_boxes)
                 iou_values = iou(boxes, class_gt_boxes)
                 # print(iou_values)
                 # print("here", str(len(boxes)))

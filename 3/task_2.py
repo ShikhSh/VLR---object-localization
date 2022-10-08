@@ -203,7 +203,7 @@ def test_model(model, val_loader=None, thresh=0.05):
             rois = torch.stack([torch.as_tensor(x) for x in data['rois']], dim=0)
             gt_boxes = torch.stack([torch.as_tensor(x) for x in data['gt_boxes']], dim=0).squeeze(dim=0)
             gt_class_list = torch.stack([torch.as_tensor(x) for x in data['gt_classes']], dim=0).squeeze(dim=0)
-            print("IamprintingGTclasses")
+            print("IamprintingGTclasses", str(iter))
             print(gt_class_list)
             # TODO (Q2.3): perform forward pass, compute cls_probs
             cls_scores = model(image.cuda(), rois*img_size, target.cuda())
@@ -213,13 +213,13 @@ def test_model(model, val_loader=None, thresh=0.05):
             # TODO (Q2.3): Iterate over each class (follow comments)
             for class_num in range(20):
                 # get valid rois and cls_scores
-                print("Looking for class",str(class_num))
+                print("Looking for class",str(class_num), " = ", str(iter))
                 scores = cls_scores[:, class_num]
                 boxes = rois.squeeze()[:,:]
 
                 trial = torch.where(cls_scores[:, class_num]>thresh)
-                if len(trial)>0:
-                    print("hurra")
+                # if len(trial)>0:
+                #     print("hurra")
                     # print(trial)
                 # finding the number of gt boxes for the current class (useful for computing recall)
                 curr_gt_boxes = None
@@ -231,12 +231,12 @@ def test_model(model, val_loader=None, thresh=0.05):
                 # perform NMS on boxes and scores, boxes are reverse sorted based on the scores [To get rid of predicted boxes with iou > threshold]
                 boxes, scores = nms(boxes, scores, threshold=thresh)
                 if len(boxes) == 0:
-                    print("EXITINGGGGGGG1")
+                    # print("EXITINGGGGGGG1")
                     continue
-                if len(boxes) > 0:
-                    print("WUHOOO")
-                if curr_gt_boxes == None or len(curr_gt_boxes) == 0:
-                    print("EXITINGGGGGGG2")
+                # if len(boxes) > 0:
+                #     print("WUHOOO")
+                # if curr_gt_boxes == None or len(curr_gt_boxes) == 0:
+                #     print("EXITINGGGGGGG2")
                 boxes = torch.stack(boxes, dim=0)
                 scores = torch.stack(scores, dim=0)
 
@@ -250,6 +250,8 @@ def test_model(model, val_loader=None, thresh=0.05):
                     match_found = False
                     if ious is not None:
                         iou_idx_max = ious[idx].argmax()
+                        print("here-----------------------iouuuuu------------")
+                        print(ious[idx])
                         if ious[idx, iou_idx_max] >= 0.5:
                             # found some gt box that matched the prediction, mark it as used since you cannot use it again
                             ious[:, iou_idx_max] = 0

@@ -49,8 +49,8 @@ def nms(bounding_boxes, confidence_score, threshold=0.05):
         else:
             bounding_boxes = bounding_boxes[valid_indices,:]
             confidence_score = confidence_score[valid_indices]
-
-    print("PRINTING BOXESSS:::::::::::::::::::::", str(len(boxes)))
+    if len(boxes)>0:
+        print("PRINTING BOXESSS:::::::::::::::::::::", str(len(boxes)))
     return boxes, scores
 
 
