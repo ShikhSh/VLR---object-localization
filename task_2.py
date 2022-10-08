@@ -131,7 +131,7 @@ def set_up_wandb():
     if USE_WANDB:
         wandb.login(key="f123ce836f30a91233b673ad557cf57dfe08ef9d")
         run = wandb.init(
-            name = "vlr_hw1_trial",
+            name = "vlr_hw1_t2",
             reinit=True,
             project="vlr_hw1"
         )
@@ -450,6 +450,7 @@ def plot_graph_2(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
     Tests the networks and visualizes the detections
     :param thresh: Confidence threshold
     """
+    print("plotgraphs")
     count = 0
     coalated_data = []
     with torch.no_grad():
@@ -566,7 +567,7 @@ def plot_graph_2(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
     return coalated_data
 
 def plot_images(model, val_loader):
-
+    print("plotting_images")
     coalated_data = plot_graph_2(model, val_loader)
     for i, data in enumerate(coalated_data):
         image, rois, classes = data["image"], data["boxes"], data["classes"]
