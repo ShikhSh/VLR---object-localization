@@ -252,8 +252,10 @@ def train(train_dataset, train_loader, model, criterion, optimizer, epoch):
     end = time.time()
     for i, (data) in enumerate(train_loader):
         # measure data loading time
-        images = data[0]
-        target = data[1]
+        # images = data[0]
+        # target = data[1]
+        images = data['image']
+        target = data['label']
 
         data_time.update(time.time() - end)
         images = images.to(device)
@@ -333,8 +335,10 @@ def validate(val_dataset, val_loader, model, criterion, epoch=0):
 
     end = time.time()
     for i, (data) in enumerate(val_loader):
-        images = data[0]
-        target = data[1]
+        # images = data[0]
+        # target = data[1]
+        images = data['image']
+        target = data['label']
         images = images.to(device)
         # TODO (Q1.1): Get inputs from the data dict
         # Convert inputs to cuda if training on GPU
@@ -445,8 +449,10 @@ def plot_img_and_heatplot(dataset, model, epoch):
     images_to_print = [1,2,3]
     for i in images_to_print:
         data = dataset[i]
-        image = data[0]
-        target = data[1]
+        image = data['image']
+        target = data['label']
+        # image = data[0]
+        # target = data[1]
         image = image.to(device)
         # TODO (Q1.1): Get inputs from the data dict
         # Convert inputs to cuda if training on GPU
