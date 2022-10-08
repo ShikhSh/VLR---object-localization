@@ -341,7 +341,7 @@ def train(train_dataset, train_loader, model, criterion, optimizer, epoch):
             #           ))
 
         # TODO (Q1.3): Visualize/log things as mentioned in handout at appropriate intervals
-    if epoch%2==1:
+    if epoch%2==1:# and USE_WANDB:
         plot_img_and_heatplot(train_dataset, model, epoch)
 
         # End of train()
@@ -488,6 +488,9 @@ def plot_img_and_heatplot(dataset, model, epoch):
 
         # TODO (Q1.1): Get output from model
         img_features = model.features(image)[0][0]#since Nx(C==0)x512x512
+        print("in plotting")
+        print(img_features.shape)
+        print(image.shape[1:])
         img_features = F.interpolate(img_features, size=image.shape[1:], mode="bilinear").squeeze() # perform bilinear interpolation of the feature map and resize it to input image size
         # feature_map = (feature_map-torch.min(feature_map))/(torch.max(feature_map) - torch.min(feature_map))
         img_features = torch.sigmoid(img_features)
