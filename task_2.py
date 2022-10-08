@@ -201,6 +201,7 @@ def test_model(model, val_loader=None, thresh=0.05):
     for i in range(20):
         overall_tp[i] = []
         overall_fp[i] = []
+        overall_gt[i] = []
     with torch.no_grad():
         for iter, data in enumerate(val_loader):
 
