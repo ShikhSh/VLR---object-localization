@@ -172,7 +172,7 @@ def calculate_map(overall_tp, overall_fp, overall_gt):
         track_tp = np.cumsum(track_tp)
         track_fp = np.cumsum(track_fp)
         n_class_gt = np.cumsum(n_class_gt)
-        
+
         n_class_gt[n_class_gt==0] = 1
         sum_ = (track_tp+track_fp)
         sum_[sum_==0] = 1
@@ -310,7 +310,8 @@ def test_model(model, val_loader=None, thresh=0.05):
                 # TODO (Q2.3): visualize bounding box predictions when required
                 # map_ = calculate_map(track_tp, track_fp, n_class_gt)
                 # class_aps.append(map_)
-            # break
+            if iter >= 1000:
+                break
 
     print("====================================================================================class APs: ")
     print(overall_tp)
