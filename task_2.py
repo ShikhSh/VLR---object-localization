@@ -354,6 +354,7 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
     Trains the network, runs evaluation and visualizes the detections
     """
     # Initialize training variables
+    plot_images(model, val_loader)
     train_loss = 0
     step_cnt = 0
     for epoch in range(args.epochs):
