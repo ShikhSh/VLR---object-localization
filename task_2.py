@@ -209,8 +209,8 @@ def calculate_map(overall_tp, overall_fp, overall_gt, over_all_scores):
         # mpre = mpre[sorted_indices]
         # ap1 = sklearn.metrics.auc(mrec, mpre)
         ap = sum([(mrec[i] - mrec[i-1])*np.max(mpre[i:]) for i in range(1, len(mpre))]) # compute AP for the class
-        print("AP class-wise: ")
-        print( str(ap))#, str(ap1), " , ", str(ap))
+        # print("AP class-wise: ")
+        # print( str(ap))#, str(ap1), " , ", str(ap))
         all_ap.append(ap)
 
     assert len(all_ap) == 20
