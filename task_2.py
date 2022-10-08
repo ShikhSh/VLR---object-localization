@@ -173,7 +173,9 @@ def calculate_map(overall_tp, overall_fp, overall_gt):
         sum_ = (track_tp+track_fp)
         sum_[sum_==0] = 1
         precision = 1.0*track_tp/sum_
-
+        print("---------------precision and recall-------------------")
+        print(precision)
+        print(recall)
         mrec = np.concatenate(([0.], recall, [1.]))
         mpre = np.concatenate(([0.], precision, [0.]))
         # print("recnnnnnnnnnnnnnnnnnnnnnprecisionnnnnnnnnnnnnnnnn")
@@ -181,6 +183,9 @@ def calculate_map(overall_tp, overall_fp, overall_gt):
         # print(precision)
         ap = sklearn.metrics.auc(mrec, mpre)
         all_ap.append(ap)
+
+    assert len(all_ap) == 20
+
     return all_ap
 
 
@@ -292,8 +297,9 @@ def test_model(model, val_loader=None, thresh=0.05):
     print("====================================================================================class APs: ")
     print(overall_tp)
     print(overall_fp)
-    map_ = calculate_map(overall_tp, overall_fp, overall_gt)
-    return class_aps
+    all_aps = calculate_map(overall_tp, overall_fp, overall_gt)
+    print(all_aps)
+    return all_aps
 
 
 def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=None):
