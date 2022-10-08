@@ -171,7 +171,7 @@ class VOCDataset(Dataset):
 
         padding_len = max_gt_len - len(gt_class_list)
         gt_boxes = np.pad(np.array(gt_boxes), ((0,padding_len), (0,0)), constant_values = 0).tolist()
-        gt_class_list = np.pad(gt_class_list, ((0,padding_len)), constant_values = 0).tolist() 
+        gt_class_list = np.pad(gt_class_list, ((0,padding_len)), constant_values = -1).tolist() 
 
         """
         TODO:
