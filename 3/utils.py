@@ -33,7 +33,7 @@ def nms(bounding_boxes, confidence_score, threshold=0.05):
 
 
     while len(bounding_boxes) > 0:
-        print("hereeeee")
+        # print("hereeeee")
         # select the first bounding box and filter the boxes out of the remaining boxes with iou > 0.3 with the given box
         boxes.append(bounding_boxes[0])
         scores.append(confidence_score[0])
@@ -50,7 +50,7 @@ def nms(bounding_boxes, confidence_score, threshold=0.05):
             bounding_boxes = bounding_boxes[valid_indices,:]
             confidence_score = confidence_score[valid_indices]
 
-
+    print("PRINTING BOXESSS:::::::::::::::::::::", str(len(boxes)))
     return boxes, scores
 
 

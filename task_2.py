@@ -226,8 +226,8 @@ def test_model(model, val_loader=None, thresh=0.05):
             # print(rois)
             # print(target)
             imoutput = model(image, rois, target)
-            print("output")
-            print(imoutput)
+            # print("output")
+            # print(imoutput)
             # tmp = torch.where(imoutput>thresh)
             # if len(tmp)>0:
             #     print("VALID INDICES")
@@ -251,7 +251,7 @@ def test_model(model, val_loader=None, thresh=0.05):
                 trial = torch.where(imoutput[:, class_num]>thresh)
                 if len(trial)>0:
                     print("hurra")
-                    print(trial)
+                    # print(trial)
                 # use NMS to get boxes and scores
                 boxes, scores = nms(rois, imoutput[:, class_num])
                 if len(boxes) == 0:
@@ -269,15 +269,16 @@ def test_model(model, val_loader=None, thresh=0.05):
                     # class_aps.append(0)
                     overall_tp[i].append(tp)
                     overall_fp[i].append(fp)
+                    overall_gt[i].append(1)
                     print("EXITING2")
                     continue
 
                 # now calculate the iou for all the boxes and 
                 print("here-----------------------iouuuuu------------")
-                print(boxes)
-                print(class_gt_boxes)
+                # print(boxes)
+                # print(class_gt_boxes)
                 iou_values = iou(boxes, class_gt_boxes)
-                print(iou_values)
+                # print(iou_values)
                 # print("here", str(len(boxes)))
                 for i in range(len(boxes)):
                     # find the best gt_box for an iou

@@ -37,15 +37,15 @@ def nms(bounding_boxes, confidence_score, threshold=0.05, iou_threshold = 0.3):
     boxes, scores = torch.Tensor([]), []
 
     while len(conf_sc)>0:
-        print("hereeeee")
+        # print("hereeeee")
         best_bbox = torch.unsqueeze(b_boxes[0], dim = 0)
         best_score = conf_sc[0]
         # print(best_score)
         if best_score < threshold:
-            print("not me")
+            # print("not me")
             break
             # continue
-        print("I Survived")
+        # print("I Survived")
         boxes = torch.cat((boxes, best_bbox))
         # boxes.append(best_bbox)
         scores.append(best_score)
@@ -77,7 +77,7 @@ def nms(bounding_boxes, confidence_score, threshold=0.05, iou_threshold = 0.3):
         #     if iou_score > iou_threshold:
         #         b_boxes = torch.cat((b_boxes[0:i], b_boxes[i+1:len(b_boxes)]))
         #         conf_sc = torch.cat((conf_sc[0:i], conf_sc[i+1:len(conf_sc)]))
-
+    print("PRINTING BOXESSS:::::::::::::::::::::", str(boxes.shape))
     return boxes, scores
 
 

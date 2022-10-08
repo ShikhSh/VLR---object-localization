@@ -207,8 +207,8 @@ def test_model(model, val_loader=None, thresh=0.05):
             print(gt_class_list)
             # TODO (Q2.3): perform forward pass, compute cls_probs
             cls_scores = model(image.cuda(), rois*img_size, target.cuda())
-            print("output")
-            print(cls_scores)
+            # print("output")
+            # print(cls_scores)
 
             # TODO (Q2.3): Iterate over each class (follow comments)
             for class_num in range(20):
@@ -220,7 +220,7 @@ def test_model(model, val_loader=None, thresh=0.05):
                 trial = torch.where(cls_scores[:, class_num]>thresh)
                 if len(trial)>0:
                     print("hurra")
-                    print(trial)
+                    # print(trial)
                 # finding the number of gt boxes for the current class (useful for computing recall)
                 curr_gt_boxes = None
                 if target[0, class_num] == 1:
@@ -235,6 +235,8 @@ def test_model(model, val_loader=None, thresh=0.05):
                     continue
                 if len(boxes) > 0:
                     print("WUHOOO")
+                if curr_gt_boxes == None or len(curr_gt_boxes) == 0:
+                    print("EXITINGGGGGGG2")
                 boxes = torch.stack(boxes, dim=0)
                 scores = torch.stack(scores, dim=0)
 
@@ -253,8 +255,12 @@ def test_model(model, val_loader=None, thresh=0.05):
                             ious[:, iou_idx_max] = 0
                             match_found = True
                     boxes_match_score[class_num].append({'match':match_found, 'score':scores[idx].item()})
-                print("MATCHING-----------------------")
-                print(match_found)
+                    if match_found:
+                        print("TP-----------------------")
+                    else:
+                        print("FP-----------------------")
+                # print("MATCHING-----------------------")
+                # print(match_found)
 
 
             # TODO (Q2.3): visualize bounding box predictions when required
