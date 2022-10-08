@@ -341,6 +341,8 @@ def train(train_dataset, train_loader, model, criterion, optimizer, epoch):
             #           ))
 
         # TODO (Q1.3): Visualize/log things as mentioned in handout at appropriate intervals
+        if i>50:
+            break
     if epoch%2==1:# and USE_WANDB:
         plot_img_and_heatplot(train_dataset, model, epoch)
 
