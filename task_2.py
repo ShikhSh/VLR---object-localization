@@ -263,14 +263,14 @@ def test_model(model, val_loader=None, thresh=0.05):
                     print("EXITING1")
                     continue
                 
-                # if len(class_gt_boxes) == 0:
-                #     # there are no gt boxes for this, thus we need not do anything about it
-                #     fp += len(boxes)
-                #     # class_aps.append(0)
-                #     overall_tp[i].append(tp)
-                #     overall_fp[i].append(fp)
-                #     print("EXITING2")
-                #     continue
+                if len(class_gt_boxes) == 0:
+                    # there are no gt boxes for this, thus we need not do anything about it
+                    fp += len(boxes)
+                    # class_aps.append(0)
+                    overall_tp[i].append(tp)
+                    overall_fp[i].append(fp)
+                    print("EXITING2")
+                    continue
 
                 # now calculate the iou for all the boxes and 
                 print("here-----------------------iouuuuu------------")
