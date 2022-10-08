@@ -209,7 +209,7 @@ def main():
         drop_last=True)
 
     if args.evaluate:
-        validate(val_loader, model, criterion)
+        validate(val_dataset, val_loader, model, criterion)
         return
 
     # TODO (Q1.3): Create loggers for wandb.
@@ -219,7 +219,7 @@ def main():
     for epoch in range(args.start_epoch, args.epochs):
         # train for one epoch
         print('Epoch')
-        train(train_loader, model, criterion, optimizer, epoch)
+        train(train_dataset, train_loader, model, criterion, optimizer, epoch)
 
         # evaluate on validation set
         if epoch % args.eval_freq == 0 or epoch == args.epochs - 1:
@@ -266,7 +266,7 @@ def train(train_dataset, train_loader, model, criterion, optimizer, epoch):
 
         # TODO (Q1.1): Perform any necessary operations on the output
         # max_pool_layer = nn.MaxPool2d(kernel_size=3, stride=2)
-        imoutput = torch.max(imoutput_whole, dim = 2)[0].max(2)[0]
+        imoutput = imoutput_whole#torch.max(imoutput_whole, dim = 2)[0].max(2)[0]
 
         # TODO (Q1.1): Compute loss using ``criterion``
         loss = criterion(imoutput, target).sum()
