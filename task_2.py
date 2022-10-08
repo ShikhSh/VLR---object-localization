@@ -275,7 +275,7 @@ def test_model(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
                 class_gt_boxes = gt_boxes[class_gt_indices]
                 n_class_gt = len(class_gt_boxes)
 
-                trial = torch.where(imoutput[:, class_num]>thresh)
+                # trial = torch.where(imoutput[:, class_num]>thresh)
                 # if len(trial)>0:
                     # print("hurra")
                     # print(trial)
@@ -336,8 +336,8 @@ def test_model(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
                 # TODO (Q2.3): visualize bounding box predictions when required
                 # map_ = calculate_map(track_tp, track_fp, n_class_gt)
                 # class_aps.append(map_)
-            if iter >= 1000:
-                break
+            # if iter >= 1000:
+            #     break
 
     print("====================================================================================class APs: ")
     print(overall_tp)
