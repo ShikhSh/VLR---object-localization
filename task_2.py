@@ -522,7 +522,7 @@ def plot_graph_2(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
                 indices = np.argsort(scores) # ascending order 
                 print(indices)
                 indices = np.flip(indices)
-
+                print(type(boxes))
                 boxes = boxes[indices]
 
                 iou_values = None
