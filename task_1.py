@@ -447,14 +447,14 @@ def metric1(output, target):
     # TODO (Q1.5): compute metric1
     count = 0.0
     m1 = 0.0
-    print(output)
+    # print(output)
     for i in range(20):
         target_class_vals = target.cpu()[:, i]
         output_class_vals = output.cpu()[:, i]
         if torch.sum(output_class_vals) == 0 or torch.sum(target_class_vals) == 0:
             continue
-        print(output_class_vals)
-        print(target_class_vals)
+        # print(output_class_vals)
+        # print(target_class_vals)
         m1 += sklearn.metrics.average_precision_score(target_class_vals, output_class_vals)
         count+=1
     return 1.0*m1/count
