@@ -277,6 +277,8 @@ def test_model(model, val_loader=None, thresh=0.05):
                 print("here", str(len(boxes)))
                 for i in range(len(boxes)):
                     # find the best gt_box for an iou
+                    print("here-----------------------iouuuuu------------")
+                    print(iou_values[i])
                     max_ios_pos = iou_values[i].argmax()
                     # check if that value is greater than the threshold
                     if iou_values[i, max_ios_pos] >= thresh:
