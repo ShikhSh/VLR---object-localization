@@ -205,8 +205,9 @@ def calculate_map(overall_tp, overall_fp, overall_gt, over_all_scores):
         # sorted_indices = np.argsort(mrec)
         # mrec = mrec[sorted_indices]
         # mpre = mpre[sorted_indices]
-        # ap = sklearn.metrics.auc(mrec, mpre)
-        ap = sum([(recall[i] - recall[i-1])*np.max(precision[i:]) for i in range(1, len(precision))]) # compute AP for the class
+        ap1 = sklearn.metrics.auc(mrec, mpre)
+        ap = sum([(mrec[i] - mrec[i-1])*np.max(mpre[i:]) for i in range(1, len(mpre))]) # compute AP for the class
+        print("APssssssssssssss:::::::::::::::", str(ap1), " , ", str(ap))
         all_ap.append(ap)
 
     assert len(all_ap) == 20
@@ -302,7 +303,9 @@ def test_model(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
                 # print("here-----------------------iouuuuu------------")
                 # print(boxes)
                 # print(class_gt_boxes)
-                iou_values = iou(boxes, class_gt_boxes)
+                iou_values = None
+                if len(class_gt_boxes) > 0:
+                    iou_values = iou(boxes, class_gt_boxes)
                 # print(iou_values)
                 # print("here", str(len(boxes)))
                 for i in range(len(boxes)):
@@ -310,7 +313,7 @@ def test_model(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
                     tp = 0
                     fp = 0
                     # print(iou_values[i])
-                    if len(class_gt_boxes) > 0:
+                    if len(class_gt_boxes) > 0 and (not iou_values is None):
                         max_ios_pos = iou_values[i].argmax()
                         # check if that value is greater than the threshold
                         if iou_values[i, max_ios_pos] >= iou_threshold:
@@ -330,8 +333,8 @@ def test_model(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
                 # TODO (Q2.3): visualize bounding box predictions when required
                 # map_ = calculate_map(track_tp, track_fp, n_class_gt)
                 # class_aps.append(map_)
-            # if iter >= 1000:
-            #     break
+            if iter >= 1000:
+                break
 
     print("====================================================================================class APs: ")
     print(overall_tp)
