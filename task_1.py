@@ -460,9 +460,11 @@ def metric1(output, target):
             continue
         # print(output_class_vals)
         # print(target_class_vals)
-        m1 += sklearn.metrics.average_precision_score(target_class_vals, output_class_vals)
+        ap = sklearn.metrics.average_precision_score(target_class_vals, output_class_vals)
+        print("Printing APs::::", str(ap))
+        m1 += ap
         count+=1
-    return 1.0*m1/count
+    return 1.0*m1/20
 
 
 def metric2(output, target):
@@ -485,7 +487,7 @@ def plot_img_and_heatplot(dataset, model, epoch):
         target = target.to(device)
 
         # TODO (Q1.1): Get output from model
-        img_features = model.features(image)[0][target]#since NxCx512x512
+        img_features = model.features(image)[0][0]#since Nx(C==0)x512x512
         img_features = F.interpolate(img_features, size=image.shape[1:], mode="bilinear").squeeze() # perform bilinear interpolation of the feature map and resize it to input image size
         # feature_map = (feature_map-torch.min(feature_map))/(torch.max(feature_map) - torch.min(feature_map))
         img_features = torch.sigmoid(img_features)
