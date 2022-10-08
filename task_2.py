@@ -169,6 +169,10 @@ def calculate_map(overall_tp, overall_fp, overall_gt):
     for i in range(20):
         track_tp, track_fp, n_class_gt = overall_tp[i], overall_fp[i], overall_gt[i]
         track_tp, track_fp, n_class_gt = np.array(track_tp), np.array(track_fp), np.array(n_class_gt)
+        track_tp = np.cumsum(track_tp)
+        track_fp = np.cumsum(track_fp)
+        n_class_gt = np.cumsum(n_class_gt)
+        
         n_class_gt[n_class_gt==0] = 1
         sum_ = (track_tp+track_fp)
         sum_[sum_==0] = 1
