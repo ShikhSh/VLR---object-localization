@@ -324,21 +324,6 @@ def train(train_dataset, train_loader, model, criterion, optimizer, epoch):
             print("Losses: ", losses.val, ", ", losses.avg)
             print("M1: ", avg_m1.val, ", ", avg_m1.avg)
             print("M2: ", avg_m2.val, ", ", avg_m2.avg)
-            # print('Epoch: [{0}][{1}/{2}]\t'
-            #       'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-            #       'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
-            #       'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-            #       'Metric1 {avg_m1.val:.3f} ({avg_m1.avg:.3f})\t'
-            #       'Metric2 {avg_m2.val:.3f} ({avg_m2.avg:.3f})'.format(
-            #           epoch,
-            #           i,
-            #           len(train_loader),
-            #           batch_time=batch_time,
-            #           data_time=data_time,
-            #           loss=losses,
-            #           avg_m1=avg_m1,
-            #           avg_m2=avg_m2
-            #           ))
 
         # TODO (Q1.3): Visualize/log things as mentioned in handout at appropriate intervals
         if i>50:
@@ -393,17 +378,6 @@ def validate(val_dataset, val_loader, model, criterion, epoch=0):
             print("Loss: ", losses.val, ", ", losses.avg)
             print("M1: ", avg_m1.val, ", ", avg_m1.avg)
             print("M2: ", avg_m2.val, ", ", avg_m2.avg)
-            # print('Test: [{0}/{1}]\t'
-            #       'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-            #       'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-            #       'Metric1 {avg_m1.val:.3f} ({avg_m1.avg:.3f})\t'
-            #       'Metric2 {avg_m2.val:.3f} ({avg_m2.avg:.3f})'.format(
-            #           i,
-            #           len(val_loader),
-            #           batch_time=batch_time,
-            #           loss=losses,
-            #           avg_m1=avg_m1,
-            #           avg_m2=avg_m2))
 
         if USE_WANDB:
             wandb.log({
@@ -465,7 +439,7 @@ def metric1(output, target):
         # print(output_class_vals)
         # print(target_class_vals)
         ap = sklearn.metrics.average_precision_score(target_class_vals, output_class_vals)
-        print("Printing APs::::", str(ap))
+        # print("Printing APs::::", str(ap))
         m1 += ap
         count+=1
     return 1.0*m1/20
@@ -492,14 +466,12 @@ def plot_img_and_heatplot(dataset, model, epoch):
 
         # TODO (Q1.1): Get output from model
         img_features = model.features(image)#since 256x31x31
+        # since interpolate wants batches X channels X width X height
         img_features = img_features.unsqueeze(0)
-        print("in plotting")
-        print(img_features.shape)
-        print(image.shape[1:])
-        img_features = F.interpolate(img_features, size=512, mode="bilinear").squeeze() # perform bilinear interpolation of the feature map and resize it to input image size
-        print(img_features.shape)
-        # feature_map = (feature_map-torch.min(feature_map))/(torch.max(feature_map) - torch.min(feature_map))
+        # resize to image size
+        img_features = F.interpolate(img_features, size=512, mode="bilinear").squeeze()
         img_features = torch.sigmoid(img_features)
+        print("inplotting")
         print(img_features.shape)
         img_features = img_features.squeeze().detach().cpu().numpy()
         print(img_features.shape)
