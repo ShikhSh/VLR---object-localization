@@ -208,7 +208,7 @@ def calculate_map(overall_tp, overall_fp, overall_gt):
     return all_ap
 
 
-def test_model(model, val_loader=None, thresh=0.05):
+def test_model(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
     """
     Tests the networks and visualizes the detections
     :param thresh: Confidence threshold
@@ -305,7 +305,7 @@ def test_model(model, val_loader=None, thresh=0.05):
                     # print(iou_values[i])
                     max_ios_pos = iou_values[i].argmax()
                     # check if that value is greater than the threshold
-                    if iou_values[i, max_ios_pos] >= thresh:
+                    if iou_values[i, max_ios_pos] >= iou_threshold:
                         iou_values[:, max_ios_pos] = -1 #since it should not be used again
                         tp+=1
                         # print("TP-----------------------")
@@ -339,6 +339,7 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
     step_cnt = 0
     for epoch in range(args.epochs):
         losses = AverageMeter()
+        print("EPOCH=======", str(epoch))
         for iter, data in enumerate(train_loader):
 
             # TODO (Q2.2): get one batch and perform forward pass
@@ -393,6 +394,7 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
                 model.train()
                 tl = 1.0*train_loss/step_cnt
                 print("TRAINLOSS:::::::::::::::::::::::::::::::::::", str(tl))
+                print("Status=======", str(iter), "/", str())
 
             # TODO (Q2.4): Perform all visualizations here
             # The intervals for different things are defined in the handout
@@ -413,7 +415,7 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
     # TODO (Q2.4): Plot class-wise APs
 
 
-def get_img_plotting_data(model, val_loader=None, thresh=0.05):
+def get_img_plotting_data(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
     images_to_plot = [2,4,7,9,10]
     images = []
     bounding_boxes = []
@@ -465,7 +467,7 @@ def get_img_plotting_data(model, val_loader=None, thresh=0.05):
                     # find the best gt_box for an iou
                     max_ios_pos = iou_values[idx].argmax()
                     # check if that value is greater than the threshold
-                    if iou_values[idx, max_ios_pos] >= thresh:
+                    if iou_values[idx, max_ios_pos] >= iou_threshold:
                         iou_values[:, max_ios_pos] = -1 #since it should not be used again
                         curr_bounding_boxes.append(boxes[idx])
                         curr_classes.append(class_num)
