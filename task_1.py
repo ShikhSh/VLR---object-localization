@@ -413,9 +413,11 @@ def validate(val_dataset, val_loader, model, criterion, epoch=0):
                 "val/step": epoch*len(val_loader) + i,
             })
         # TODO (Q1.3): Visualize things as mentioned in handout
-        if epoch%2==1 and USE_WANDB:
-            plot_img_and_heatplot(val_dataset, model, epoch)
-        # TODO (Q1.3): Visualize at appropriate intervals
+        if i>50:
+            break
+    if epoch%2==1 and USE_WANDB:
+        plot_img_and_heatplot(val_dataset, model, epoch)
+    # TODO (Q1.3): Visualize at appropriate intervals
 
 
     print(' * Metric1 {avg_m1.avg:.3f} Metric2 {avg_m2.avg:.3f}'.format(
