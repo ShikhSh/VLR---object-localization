@@ -491,7 +491,7 @@ def plot_img_and_heatplot(dataset, model, epoch):
         target = target.to(device)
 
         # TODO (Q1.1): Get output from model
-        img_features = model.features(image)[0][0]#since Nx(C==0)x512x512
+        img_features = model.features(image)#since Nx(C==0)x512x512
         print("in plotting")
         print(img_features.shape)
         print(image.shape[1:])
