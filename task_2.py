@@ -336,8 +336,9 @@ def test_model(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
                 # TODO (Q2.3): visualize bounding box predictions when required
                 # map_ = calculate_map(track_tp, track_fp, n_class_gt)
                 # class_aps.append(map_)
-            # if iter >= 1000:
-            #     break
+            if iter >= 1000:
+                plot_graph_2(model, val_loader)
+                break
 
     print("====================================================================================class APs: ")
     print(overall_tp)
