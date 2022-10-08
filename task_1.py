@@ -194,7 +194,7 @@ def main():
         batch_size=args.batch_size,
         shuffle=False,
         num_workers=args.workers,
-        collate_fn = collate_fn,
+        # collate_fn = collate_fn,
         pin_memory=True,
         # sampler=train_sampler,
         drop_last=True)
@@ -204,7 +204,7 @@ def main():
         batch_size=args.batch_size,
         shuffle=False,
         num_workers=args.workers,
-        collate_fn = collate_fn,
+        # collate_fn = collate_fn,
         pin_memory=True,
         drop_last=True)
 
