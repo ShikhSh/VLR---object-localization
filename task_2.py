@@ -197,7 +197,8 @@ def calculate_map(overall_tp, overall_fp, overall_gt):
         sorted_indices = np.argsort(mrec)
         mrec = mrec[sorted_indices]
         mpre = mpre[sorted_indices]
-        ap = sklearn.metrics.auc(mrec, mpre)
+        # ap = sklearn.metrics.auc(mrec, mpre)
+        ap = sum([(mrec[i] - mrec[i-1])*np.max(mpre[i:]) for i in range(1, len(mpre))])
         all_ap.append(ap)
 
     assert len(all_ap) == 20
