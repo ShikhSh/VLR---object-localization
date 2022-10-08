@@ -319,7 +319,7 @@ def train(train_dataset, train_loader, model, criterion, optimizer, epoch):
                 "train/step": epoch*len(train_loader) + i,
             })
 
-        if i % args.print_freq == 0:
+        if i % 5000 == 0:
             print("Epoch: ", epoch, ", ", i, "/", len(train_loader))
             print("Losses: ", losses.val, ", ", losses.avg)
             print("M1: ", avg_m1.val, ", ", avg_m1.avg)
@@ -328,7 +328,7 @@ def train(train_dataset, train_loader, model, criterion, optimizer, epoch):
         # TODO (Q1.3): Visualize/log things as mentioned in handout at appropriate intervals
         # if i>50:
         #     break
-    if epoch%2==1:# and USE_WANDB:
+    if epoch==0 or epoch == 1 or epoch == 14 or epoch == 29:# and USE_WANDB:
         plot_img_and_heatplot(train_dataset, model, epoch)
 
         # End of train()
@@ -373,7 +373,7 @@ def validate(val_dataset, val_loader, model, criterion, epoch=0):
         batch_time.update(time.time() - end)
         end = time.time()
         # print("M2: ", avg_m2)
-        if i % args.print_freq == 0:
+        if i % 5000 == 0:
             print("Test: ", i, "/", len(val_loader))
             print("Loss: ", losses.val, ", ", losses.avg)
             print("M1: ", avg_m1.val, ", ", avg_m1.avg)
@@ -389,7 +389,8 @@ def validate(val_dataset, val_loader, model, criterion, epoch=0):
         # TODO (Q1.3): Visualize things as mentioned in handout
         # if i>50:
         #     break
-    if epoch%2==1 and USE_WANDB:
+    #if epoch%2==1 and USE_WANDB:
+    if epoch == 29:
         plot_img_and_heatplot(val_dataset, model, epoch)
     # TODO (Q1.3): Visualize at appropriate intervals
 
