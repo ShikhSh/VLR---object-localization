@@ -311,7 +311,7 @@ def test_model(model, val_loader=None, thresh=0.05):
                         print("FP-----------------------")
                     overall_tp[class_num].append(tp)
                     overall_fp[class_num].append(fp)
-                    overall_gt[class_num].append(i)
+                    overall_gt[class_num].append(n_class_gt)
                 
                 # TODO (Q2.3): visualize bounding box predictions when required
                 # map_ = calculate_map(track_tp, track_fp, n_class_gt)
