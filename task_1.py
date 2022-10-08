@@ -30,7 +30,7 @@ device = torch.device('cpu')
 if torch.cuda.is_available():
     device = torch.device("cuda")
 
-USE_WANDB = True  # use flags, wandb is not convenient for debugging
+USE_WANDB = False#True  # use flags, wandb is not convenient for debugging
 model_names = sorted(name for name in models.__dict__
                      if name.islower() and not name.startswith("__")
                      and callable(models.__dict__[name]))
@@ -50,6 +50,12 @@ parser.add_argument(
     type=int,
     metavar='N',
     help='number of total epochs to run')
+# parser.add_argument(
+#     '--wandb',
+#     default=False,
+#     type=bool,
+#     metavar='N',
+#     help='number of total epochs to run')
 parser.add_argument(
     '--start-epoch',
     default=0,
@@ -271,7 +277,6 @@ def train(train_dataset, train_loader, model, criterion, optimizer, epoch):
         # measure data loading time
         # images = data[0]
         # target = data[1]
-        data_time.update(time.time() - end)
         images = data['image']
         target = data['label']
 
@@ -406,7 +411,7 @@ def validate(val_dataset, val_loader, model, criterion, epoch=0):
                 "val/step": epoch*len(val_loader) + i,
             })
         # TODO (Q1.3): Visualize things as mentioned in handout
-        if epoch%2==1:
+        if epoch%2==1 and USE_WANDB:
             plot_img_and_heatplot(val_dataset, model, epoch)
         # TODO (Q1.3): Visualize at appropriate intervals
 
@@ -489,7 +494,6 @@ def plot_img_and_heatplot(dataset, model, epoch):
         img_features = cmap(img_features)
         feat_img = wandb.Image(img_features)
         orig_img = wandb.Image(tensor_to_PIL(image))
-
         wandb.log({f"Feature_map_{i}": feat_img, "epoch": epoch, f"orig_img_{i}": orig_img})
 
 if __name__ == '__main__':
