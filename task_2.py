@@ -327,7 +327,9 @@ def test_model(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
                         fp = 1
                     overall_tp[class_num].append(tp)
                     overall_fp[class_num].append(fp)
-                    over_all_scores[class_num].append(scores[i])
+                    print("debug pritngin")
+                    print(scores[i])
+                    over_all_scores[class_num].append(scores[i].to('cpu'))
                 overall_gt[class_num].append(n_class_gt)
                 
                 # TODO (Q2.3): visualize bounding box predictions when required
