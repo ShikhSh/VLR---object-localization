@@ -354,7 +354,7 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
     Trains the network, runs evaluation and visualizes the detections
     """
     # Initialize training variables
-    plot_images(model, val_loader)
+    # plot_images(model, val_loader)
     train_loss = 0
     step_cnt = 0
     for epoch in range(args.epochs):
@@ -472,16 +472,7 @@ def plot_graph_2(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
             # image_size = image.shape[0]
             rois = rois*512
             gt_boxes = gt_boxes *512
-            # TODO (Q2.3): perform forward pass, compute cls_probs
-            # print(image)
-            # print(rois)
-            # print(target)
             imoutput = model(image, rois, target)
-            # print("output")
-            # print(imoutput)
-            # tmp = torch.where(imoutput>thresh)
-            # if len(tmp)>0:
-            #     print("VALID INDICES")
 
             # TODO (Q2.3): Iterate over each class (follow comments)
             # for each class
@@ -490,63 +481,19 @@ def plot_graph_2(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
             boxes_to_plot = []
             corresponding_classes = []
             for class_num in range(20):
-                # get valid rois and cls_scores based on thresh
-                # print("Looking for class",str(class_num), " = ", str(iter))
-                # track_tp = []
-                # track_fp = []
                 class_gt_indices = torch.where(gt_class_list == class_num)
                 class_gt_boxes = gt_boxes[class_gt_indices]
-                # n_class_gt = len(class_gt_boxes)
-                # overall_gt[class_num].append(n_class_gt)
-                # trial = torch.where(imoutput[:, class_num]>thresh)
-                # if len(trial)>0:
-                    # print("hurra")
-                    # print(trial)
-                # use NMS to get boxes and scores
+                
                 boxes, scores = nms(rois, imoutput[:, class_num], iou_threshold = 0.001)
                 if len(boxes) == 0:
-                    # we need not keep a count of false negatives otherwise this would have come here
-                    # class_aps.append(0)
-                    # overall_tp[class_num].append(0)
-                    # overall_fp[class_num].append()
-                    # overall_gt[class_num].append(n_class_gt)
-                    # print("EXITING1")
                     continue
-                
-                # if len(class_gt_boxes) == 0:
-                #     # there are no gt boxes for this, thus we need not do anything about it
-                #     fp += len(boxes)
-                #     # class_aps.append(0)
-                #     overall_tp[class_num].append(tp)
-                #     overall_fp[class_num].append(fp)
-                #     overall_gt[class_num].append(0)
-                #     # print("EXITING2")
-                #     continue
-
-                # now calculate the iou for all the boxes and 
-                # print("here-----------------------iouuuuu------------")
-                # print(boxes)
-                # print(class_gt_boxes)
-
-                # sorting the boxes according to scores:
-                # scores = [i.cpu().numpy() for i in scores]
-                # scores = np.array(scores)
-                # print(scores)
-                # indices = np.argsort(scores) # ascending order 
-                # print(indices)
-                # indices = np.flip(indices)
-                # print(type(boxes))
-                # boxes = boxes[indices]
+                print("survived")
 
                 iou_values = None
                 if len(class_gt_boxes) > 0:
                     iou_values = iou(boxes, class_gt_boxes)
 
                 for i in range(len(boxes)):
-                    # find the best gt_box for an iou
-                    # tp = 0
-                    # fp = 0
-                    # print(iou_values[i])
                     current_box = boxes[i]
                     if len(class_gt_boxes) > 0 and (not iou_values is None):
                         max_ios_pos = iou_values[i].argmax()
@@ -562,14 +509,8 @@ def plot_graph_2(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
                         "boxes": boxes_to_plot,
                         "classes": corresponding_classes
                     })
-                if len(boxes)>0:
-                    count += 1
-                    coalated_data.append({
-                        "image": image,
-                        "boxes": boxes[0],
-                        "classes": 0
-                    })
                 if count > 12:
+                    print("breakinggg")
                     break
     return coalated_data
 
