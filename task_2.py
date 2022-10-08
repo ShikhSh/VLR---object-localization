@@ -144,7 +144,7 @@ def load_pretained_weights(model):
         model.features[i].load_state_dict(alex_net_pretrained.features[i].state_dict())
     return model
 
-def calculate_map(overall_tp, overall_fp, overall_gt):
+def calculate_map(overall_tp, overall_fp, overall_gt, over_all_scores):
     """
     Calculate the mAP for classification.
     """
@@ -170,12 +170,18 @@ def calculate_map(overall_tp, overall_fp, overall_gt):
     # this is ap(Avg Precision), do that for all, get map
     all_ap = []
     for i in range(20):
-        track_tp, track_fp, n_class_gt = overall_tp[i], overall_fp[i], overall_gt[i]
-        track_tp, track_fp, n_class_gt = np.array(track_tp), np.array(track_fp), np.array(n_class_gt)
+        track_tp, track_fp, n_class_gt, track_scores = overall_tp[i], overall_fp[i], overall_gt[i], over_all_scores[i]
+        track_tp, track_fp, n_class_gt, track_scores = np.array(track_tp), np.array(track_fp), np.array(n_class_gt), np.array(track_scores)
+        
+        # sort on the basis of scores:
+        sorted_indices = np.argsort(track_scores)
+        track_tp = track_tp[sorted_indices]
+        track_fp = track_fp[sorted_indices]
+        
         track_tp = np.cumsum(track_tp)
         track_fp = np.cumsum(track_fp)
-        n_class_gt = np.cumsum(n_class_gt)
-        # tot_gt_boxes = np.sum(n_class_gt)*1.0
+        # n_class_gt = np.cumsum(n_class_gt)
+        tot_gt_boxes = np.sum(n_class_gt)*1.0
 
         n_class_gt[n_class_gt==0] = 1
         sum_ = (track_tp+track_fp)
@@ -186,7 +192,7 @@ def calculate_map(overall_tp, overall_fp, overall_gt):
         # print(track_fp)
         # print(n_class_gt)
 
-        recall = 1.0*track_tp/n_class_gt#tot_gt_boxes#n_class_gt
+        recall = 1.0*track_tp/tot_gt_boxes#n_class_gt#tot_gt_boxes#n_class_gt
         precision = 1.0*track_tp/sum_
         print("---------------precision and recall-------------------")
         print(precision)
@@ -217,10 +223,12 @@ def test_model(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
     overall_tp = {}
     overall_fp = {}
     overall_gt = {}
+    over_all_scores = {}
     for i in range(20):
         overall_tp[i] = []
         overall_fp[i] = []
         overall_gt[i] = []
+        over_all_scores[i] = []
     with torch.no_grad():
         for iter, data in enumerate(val_loader):
 
@@ -259,8 +267,6 @@ def test_model(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
             for class_num in range(20):
                 # get valid rois and cls_scores based on thresh
                 # print("Looking for class",str(class_num), " = ", str(iter))
-                tp = 0
-                fp = 0
                 # track_tp = []
                 # track_fp = []
                 class_gt_indices = torch.where(gt_class_list == class_num)
@@ -282,15 +288,15 @@ def test_model(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
                     # print("EXITING1")
                     continue
                 
-                if len(class_gt_boxes) == 0:
-                    # there are no gt boxes for this, thus we need not do anything about it
-                    fp += len(boxes)
-                    # class_aps.append(0)
-                    overall_tp[class_num].append(tp)
-                    overall_fp[class_num].append(fp)
-                    overall_gt[class_num].append(0)
-                    # print("EXITING2")
-                    continue
+                # if len(class_gt_boxes) == 0:
+                #     # there are no gt boxes for this, thus we need not do anything about it
+                #     fp += len(boxes)
+                #     # class_aps.append(0)
+                #     overall_tp[class_num].append(tp)
+                #     overall_fp[class_num].append(fp)
+                #     overall_gt[class_num].append(0)
+                #     # print("EXITING2")
+                #     continue
 
                 # now calculate the iou for all the boxes and 
                 # print("here-----------------------iouuuuu------------")
@@ -301,19 +307,24 @@ def test_model(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
                 # print("here", str(len(boxes)))
                 for i in range(len(boxes)):
                     # find the best gt_box for an iou
-                    
+                    tp = 0
+                    fp = 0
                     # print(iou_values[i])
-                    max_ios_pos = iou_values[i].argmax()
-                    # check if that value is greater than the threshold
-                    if iou_values[i, max_ios_pos] >= iou_threshold:
-                        iou_values[:, max_ios_pos] = -1 #since it should not be used again
-                        tp+=1
-                        # print("TP-----------------------")
+                    if len(class_gt_boxes) > 0:
+                        max_ios_pos = iou_values[i].argmax()
+                        # check if that value is greater than the threshold
+                        if iou_values[i, max_ios_pos] >= iou_threshold:
+                            iou_values[:, max_ios_pos] = -1 #since it should not be used again
+                            tp = 1
+                            # print("TP-----------------------")
+                        else:
+                            fp = 1
+                            # print("FP-----------------------")
                     else:
-                        fp+=1
-                        # print("FP-----------------------")
-                overall_tp[class_num].append(tp)
-                overall_fp[class_num].append(fp)
+                        fp = 1
+                    overall_tp[class_num].append(tp)
+                    overall_fp[class_num].append(fp)
+                    over_all_scores[class_num].append(scores[i])
                 overall_gt[class_num].append(n_class_gt)
                 
                 # TODO (Q2.3): visualize bounding box predictions when required
@@ -325,7 +336,7 @@ def test_model(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
     print("====================================================================================class APs: ")
     print(overall_tp)
     print(overall_fp)
-    all_aps = calculate_map(overall_tp, overall_fp, overall_gt)
+    all_aps = calculate_map(overall_tp, overall_fp, overall_gt, over_all_scores)
     print(all_aps)
     return all_aps
 
