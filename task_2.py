@@ -503,7 +503,7 @@ def plot_graph_2(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
                     # print("hurra")
                     # print(trial)
                 # use NMS to get boxes and scores
-                boxes, scores = nms(rois, imoutput[:, class_num])
+                boxes, scores = nms(rois, imoutput[:, class_num], iou_threshold = 0.001)
                 if len(boxes) == 0:
                     # we need not keep a count of false negatives otherwise this would have come here
                     # class_aps.append(0)
