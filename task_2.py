@@ -562,6 +562,13 @@ def plot_graph_2(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
                         "boxes": boxes_to_plot,
                         "classes": corresponding_classes
                     })
+                if len(boxes)>0:
+                    count += 1
+                    coalated_data.append({
+                        "image": image,
+                        "boxes": boxes[0],
+                        "classes": 0
+                    })
                 if count > 12:
                     break
     return coalated_data
