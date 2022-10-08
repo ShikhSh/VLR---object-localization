@@ -491,11 +491,13 @@ def plot_img_and_heatplot(dataset, model, epoch):
         target = target.to(device)
 
         # TODO (Q1.1): Get output from model
-        img_features = model.features(image)#since Nx(C==0)x512x512
+        img_features = model.features(image)#since 256x31x31
+        img_features = img_features.unsqueeze(0)
         print("in plotting")
         print(img_features.shape)
         print(image.shape[1:])
-        img_features = F.interpolate(img_features, size=image.shape[1:], mode="bilinear").squeeze() # perform bilinear interpolation of the feature map and resize it to input image size
+        img_features = F.interpolate(img_features, size=image.shape[1:], mode="bilinear")#.squeeze() # perform bilinear interpolation of the feature map and resize it to input image size
+        print(img_features.shape)
         # feature_map = (feature_map-torch.min(feature_map))/(torch.max(feature_map) - torch.min(feature_map))
         img_features = torch.sigmoid(img_features)
         img_features = img_features.squeeze().detach().cpu().numpy()
