@@ -313,8 +313,8 @@ def test_model(model, val_loader=None, thresh=0.05):
                 # TODO (Q2.3): visualize bounding box predictions when required
                 # map_ = calculate_map(track_tp, track_fp, n_class_gt)
                 # class_aps.append(map_)
-            # if iter >= 1000:
-            #     break
+            if iter >= 1000:
+                break
 
     print("====================================================================================class APs: ")
     print(overall_tp)
@@ -515,7 +515,7 @@ def main():
         drop_last=True)
 
     # Create network and initialize with AlexNet weights
-    net = WSDDN2(classes=train_dataset.CLASS_NAMES)
+    net = WSDDN(classes=train_dataset.CLASS_NAMES)
     # net = load_pretained_weights(net)
     print(net)
 
