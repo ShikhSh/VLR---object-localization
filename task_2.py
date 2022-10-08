@@ -168,11 +168,16 @@ def calculate_map(overall_tp, overall_fp, overall_gt):
     all_ap = []
     for i in range(20):
         track_tp, track_fp, n_class_gt = overall_tp[i], overall_fp[i], overall_gt[i]
-        n_class_gt[n_class_gt==0] = 1
         track_tp, track_fp, n_class_gt = np.array(track_tp), np.array(track_fp), np.array(n_class_gt)
-        recall = 1.0*track_tp/n_class_gt
+        n_class_gt[n_class_gt==0] = 1
         sum_ = (track_tp+track_fp)
         sum_[sum_==0] = 1
+        print("---------------precision and recall-------------------")
+        print(track_tp)
+        print(track_fp)
+        print(n_class_gt)
+
+        recall = 1.0*track_tp/n_class_gt
         precision = 1.0*track_tp/sum_
         print("---------------precision and recall-------------------")
         print(precision)
