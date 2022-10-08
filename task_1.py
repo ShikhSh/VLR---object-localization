@@ -191,22 +191,39 @@ def main():
 
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
-        batch_size=args.batch_size,
-        shuffle=False,
-        num_workers=args.workers,
-        # collate_fn = collate_fn,
+        batch_size=1,   # batchsize is one for this implementation
+        shuffle=True,
+        num_workers=4,
         pin_memory=True,
-        # sampler=train_sampler,
+        sampler=None,
         drop_last=True)
 
     val_loader = torch.utils.data.DataLoader(
         val_dataset,
-        batch_size=args.batch_size,
+        batch_size=1,
         shuffle=False,
-        num_workers=args.workers,
-        # collate_fn = collate_fn,
+        num_workers=4,
         pin_memory=True,
         drop_last=True)
+    
+    # train_loader = torch.utils.data.DataLoader(
+    #     train_dataset,
+    #     batch_size=args.batch_size,
+    #     shuffle=False,
+    #     num_workers=args.workers,
+    #     # collate_fn = collate_fn,
+    #     pin_memory=True,
+    #     # sampler=train_sampler,
+    #     drop_last=True)
+
+    # val_loader = torch.utils.data.DataLoader(
+    #     val_dataset,
+    #     batch_size=args.batch_size,
+    #     shuffle=False,
+    #     num_workers=args.workers,
+    #     # collate_fn = collate_fn,
+    #     pin_memory=True,
+    #     drop_last=True)
 
     if args.evaluate:
         validate(val_dataset, val_loader, model, criterion)
