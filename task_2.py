@@ -220,7 +220,7 @@ def test_model(model, val_loader=None, thresh=0.05):
             rois = torch.stack([torch.as_tensor(x) for x in data['rois']], dim=0)
             # image_size = image.shape[0]
             rois = rois*512
-
+            gt_boxes = gt_boxes *512
             # TODO (Q2.3): perform forward pass, compute cls_probs
             # print(image)
             # print(rois)
