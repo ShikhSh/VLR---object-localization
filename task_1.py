@@ -131,7 +131,7 @@ def set_up_wandb():
     if USE_WANDB:
         wandb.login(key="f123ce836f30a91233b673ad557cf57dfe08ef9d")
         run = wandb.init(
-            name = "vlr_hw1_trial",
+            name = "vlr_hw1_task1",
             reinit=True,
             project="vlr_hw1"
         )
@@ -158,7 +158,7 @@ def main():
     # also use an LR scheduler to decay LR by 10 every 30 epochs
     criterion = nn.BCEWithLogitsLoss().to(device)
     optimizer = torch.optim.SGD(model.parameters(), lr = args.lr, momentum = args.momentum, weight_decay = args.weightDecay, nesterov = True)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size = 10, gamma = 0.1)
+    # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size = 10, gamma = 0.1)
 
 
     # optionally resume from a checkpoint
@@ -239,7 +239,7 @@ def main():
 
 
 # TODO: You can add input arguments if you wish
-def train(train_loader, model, criterion, optimizer, epoch):
+def train(train_dataset, train_loader, model, criterion, optimizer, epoch):
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses = AverageMeter()
@@ -269,7 +269,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
         imoutput = torch.max(imoutput_whole, dim = 2)[0].max(2)[0]
 
         # TODO (Q1.1): Compute loss using ``criterion``
-        loss = criterion(imoutput, target)
+        loss = criterion(imoutput, target).sum()
 
         # measure metrics and record loss
         m1 = metric1(imoutput.data, target)
@@ -286,7 +286,13 @@ def train(train_loader, model, criterion, optimizer, epoch):
         # measure elapsed time
         batch_time.update(time.time() - end)
         end = time.time()
-        wandb.log({'epoch': epoch, 'train/loss': loss})
+        if USE_WANDB:
+            wandb.log({
+                "train/loss": losses.avg,
+                "train/mAP": avg_m1.avg,
+                "train/recall": avg_m2.avg,
+                "train/step": epoch*len(train_loader) + i,
+            })
 
         if i % args.print_freq == 0:
             print("Epoch: ", epoch, ", ", i, "/", len(train_loader))
@@ -311,25 +317,12 @@ def train(train_loader, model, criterion, optimizer, epoch):
 
         # TODO (Q1.3): Visualize/log things as mentioned in handout at appropriate intervals
     if epoch%2==1:
-        image_to_plot = images[21] # we are plotting the 21st image
-        model_op_pltimg = imoutput_whole[21] # we get the scores for C classes for the 21st image
-        model_op_pltimg = model_op_pltimg[0].detach().clone() # we choose class zero for image 21
-        
-        # normalizing it between 0 and 1
-        # min_val = model_op_pltimg.min()
-        # max_val = model_op_pltimg.max()
-        # model_op_pltimg = (model_op_pltimg - min_val) /(max_val - min_val)
-
-        # PIL creates heat map
-        # plt.imshow and save and 
-        img = wandb.Image(image_to_plot)
-        heat_map = wandb.Image(model_op_pltimg)
-        wandb.log({"train/image": img, "train/heat map": heat_map})
+        plot_img_and_heatplot(train_dataset, model, epoch)
 
         # End of train()
 
 
-def validate(val_loader, model, criterion, epoch=0):
+def validate(val_dataset, val_loader, model, criterion, epoch=0):
     batch_time = AverageMeter()
     losses = AverageMeter()
     avg_m1 = AverageMeter()
@@ -353,7 +346,7 @@ def validate(val_loader, model, criterion, epoch=0):
         # TODO (Q1.1): Perform any necessary functions on the output
         imoutput = torch.max(imoutput, dim = 2)[0].max(2)[0]
         # TODO (Q1.1): Compute loss using ``criterion``
-        loss = criterion(imoutput, target)
+        loss = criterion(imoutput, target).sum()
 
         # measure metrics and record loss
         m1 = metric1(imoutput.data, target)
@@ -383,15 +376,16 @@ def validate(val_loader, model, criterion, epoch=0):
             #           avg_m1=avg_m1,
             #           avg_m2=avg_m2))
 
+        if USE_WANDB:
+            wandb.log({
+                "val/loss": losses.avg,
+                "val/mAP": avg_m1.avg,
+                "val/recall": avg_m2.avg,
+                "val/step": epoch*len(val_loader) + i,
+            })
         # TODO (Q1.3): Visualize things as mentioned in handout
-        if epoch>0 and epoch%2==0:
-            image_to_plot = images[21] # we are plotting the 21st image
-            model_op_pltimg = imoutput[21] # we get the scores for C classes for the 21st image
-            model_op_pltimg = model_op_pltimg[0].detach().clone() # we choose class zero for image 21
-
-            img = wandb.Image(image_to_plot)
-            heat_map = wandb.Image(plot_heatplot(model_op_pltimg))
-            wandb.log({"val/image": img, "val/heat map": heat_map})
+        if epoch%2==1:
+            plot_img_and_heatplot(val_dataset, model, epoch)
         # TODO (Q1.3): Visualize at appropriate intervals
 
 
@@ -438,18 +432,38 @@ def metric1(output, target):
             continue
         m1 += sklearn.metrics.average_precision_score(target_class_vals, output_class_vals)
         count+=1
-    return m1/count
+    return 1.0*m1/count
 
 
 def metric2(output, target):
     # TODO (Q1.5): compute metric2
-    output = F.softmax(output, dim = 1)
-    m2 = sklearn.metrics.recall_score(target.cpu() , output.cpu() > 0.5, average=None)
+    output = F.softmax(output, dim = 1)#torch.sigmoid(output)#
+    m2 = sklearn.metrics.recall_score(target.cpu() , output.cpu() > 0.5, average="samples", zero_division=0)
     return m2
 
-def plot_heatplot(image_tensor):
-    image = plt.imshow(image_tensor, cmap='hot', norm = "linear", interpolation=None)#'nearest')
-    return image
+def plot_img_and_heatplot(dataset, model, epoch):
+    images_to_print = [1,2,3]
+    for i in images_to_print:
+        data = dataset[i]
+        image = data[0]
+        target = data[1]
+        image = image.to(device)
+        # TODO (Q1.1): Get inputs from the data dict
+        # Convert inputs to cuda if training on GPU
+        target = target.to(device)
+
+        # TODO (Q1.1): Get output from model
+        img_features = model.features(image)[0][target]#since NxCx512x512
+        img_features = F.interpolate(img_features, size=image.shape[1:], mode="bilinear").squeeze() # perform bilinear interpolation of the feature map and resize it to input image size
+        # feature_map = (feature_map-torch.min(feature_map))/(torch.max(feature_map) - torch.min(feature_map))
+        img_features = torch.sigmoid(img_features)
+        img_features = img_features.squeeze().detach().cpu().numpy()
+        cmap = plt.get_cmap('jet')
+        img_features = cmap(img_features)
+        feat_img = wandb.Image(img_features)
+        orig_img = wandb.Image(tensor_to_PIL(image))
+
+        wandb.log({f"Feature_map_{i}": feat_img, "epoch": epoch, f"orig_img_{i}": orig_img})
 
 if __name__ == '__main__':
     main()

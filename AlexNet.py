@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torchvision.models as models
+import torch
 
 
 model_urls = {
@@ -42,7 +43,7 @@ class LocalizerAlexNet(nn.Module):
     def initialize_sequential(self, l):
         if isinstance(l, nn.Conv2d):
             # nn.init.xavier_uniform(l.weight)
-            nn.init.xavier_normal(l.weight)
+            nn.init.xavier_normal_(l.weight.data)
             # torch.nn.init.kaiming_uniform(m.weight)
             l.bias.data.fill_(0.00)
 
@@ -51,6 +52,7 @@ class LocalizerAlexNet(nn.Module):
         # TODO (Q1.1): Define forward pass
         out = self.features(x)
         out = self.classifier(out)
+        out = torch.max(out, dim = 2)[0].max(2)[0]
         return out
 
 
@@ -61,11 +63,11 @@ class LocalizerAlexNetRobust(nn.Module):
         self.features = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=(11, 11), stride=(4, 4), padding=(2, 2)),
             nn.ReLU(inplace=True),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2), dilation=(1, 1), ceil_mode=False),
+            nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), dilation=(1, 1), ceil_mode=False),
 
             nn.Conv2d(64, 192, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2)),
             nn.ReLU(inplace=True),
-            nn.AvgPool2d(kernel_size=(3, 3), stride=(2, 2), dilation=(1, 1), ceil_mode=False),
+            nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), dilation=(1, 1), ceil_mode=False),
 
             nn.Conv2d(192, 384, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
             nn.ReLU(inplace=True),
@@ -89,7 +91,7 @@ class LocalizerAlexNetRobust(nn.Module):
     
     def initialize_sequential(self, l):
         if isinstance(l, nn.Conv2d):
-            nn.init.xavier_uniform(l.weight)
+            nn.init.xavier_normal_(l.weight.data)
             # torch.nn.init.kaiming_uniform(m.weight)
             l.bias.data.fill_(0.00)
 
@@ -98,6 +100,7 @@ class LocalizerAlexNetRobust(nn.Module):
 
         out = self.features(x)
         out = self.classifier(out)
+        out = torch.mean(out, dim = 2)[0].mean(2)[0]
         return out
 
 
