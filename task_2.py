@@ -270,9 +270,9 @@ def test_model(model, val_loader=None, thresh=0.05):
                 if len(boxes) == 0:
                     # we need not keep a count of false negatives otherwise this would have come here
                     # class_aps.append(0)
-                    overall_tp[i].append(tp)
-                    overall_fp[i].append(fp)
-                    overall_gt[i].append(n_class_gt)
+                    overall_tp[class_num].append(tp)
+                    overall_fp[class_num].append(fp)
+                    overall_gt[class_num].append(n_class_gt)
                     # print("EXITING1")
                     continue
                 
@@ -280,9 +280,9 @@ def test_model(model, val_loader=None, thresh=0.05):
                     # there are no gt boxes for this, thus we need not do anything about it
                     fp += len(boxes)
                     # class_aps.append(0)
-                    overall_tp[i].append(tp)
-                    overall_fp[i].append(fp)
-                    overall_gt[i].append(1)
+                    overall_tp[class_num].append(tp)
+                    overall_fp[class_num].append(fp)
+                    overall_gt[class_num].append(1)
                     # print("EXITING2")
                     continue
 
@@ -306,9 +306,9 @@ def test_model(model, val_loader=None, thresh=0.05):
                     else:
                         fp+=1
                         print("FP-----------------------")
-                    overall_tp[i].append(tp)
-                    overall_fp[i].append(fp)
-                    overall_gt[i].append(i)
+                    overall_tp[class_num].append(tp)
+                    overall_fp[class_num].append(fp)
+                    overall_gt[class_num].append(i)
                 
                 # TODO (Q2.3): visualize bounding box predictions when required
                 # map_ = calculate_map(track_tp, track_fp, n_class_gt)
