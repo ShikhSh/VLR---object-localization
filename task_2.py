@@ -516,7 +516,8 @@ def plot_graph_2(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
                 # print(class_gt_boxes)
 
                 # sorting the boxes according to scores:
-                scores = scores.cpu().numpy()
+                scores = [i.cpu().numpy() for i in scores]
+                scores = np.array(scores)
                 indices = np.argsort(scores) # ascending order 
                 indices = np.flip(indices)
 
