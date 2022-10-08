@@ -569,7 +569,9 @@ def plot_graph_2(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
 def plot_images(model, val_loader):
     print("plotting_images")
     coalated_data = plot_graph_2(model, val_loader)
+    print(coalated_data)
     for i, data in enumerate(coalated_data):
+        
         image, rois, classes = data["image"], data["boxes"], data["classes"]
         class_id_to_label = dict(enumerate(CLASS_NAMES))
 
@@ -584,7 +586,7 @@ def plot_images(model, val_loader):
                     "class_labels": class_id_to_label,
                 },
             })
-
+            print(unsup_img)
             # TODO: log the GT bounding box
             log_on_wandb({"image": unsup_img})
             # wandb.log({"image{i}": unsup_img})
