@@ -174,14 +174,15 @@ def calculate_map(overall_tp, overall_fp, overall_gt, over_all_scores):
         track_tp, track_fp, n_class_gt, track_scores = np.array(track_tp), np.array(track_fp), np.array(n_class_gt), np.array(track_scores)
         
         # sort on the basis of scores:
-        sorted_indices = np.argsort(track_scores)
+        sorted_indices = np.argsort(track_scores) #gives ascending order result
+        sorted_indices = np.flip(sorted_indices)#converts to descending order
         track_tp = track_tp[sorted_indices]
         track_fp = track_fp[sorted_indices]
         
         track_tp = np.cumsum(track_tp)
         track_fp = np.cumsum(track_fp)
         # n_class_gt = np.cumsum(n_class_gt)
-        tot_gt_boxes = np.sum(n_class_gt)*1.0
+        tot_gt_boxes = max(np.sum(n_class_gt)*1.0, 1.0)
 
         n_class_gt[n_class_gt==0] = 1
         sum_ = (track_tp+track_fp)
@@ -327,8 +328,8 @@ def test_model(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
                         fp = 1
                     overall_tp[class_num].append(tp)
                     overall_fp[class_num].append(fp)
-                    print("debug pritngin")
-                    print(scores[i])
+                    # print("debug pritngin")
+                    # print(scores[i])
                     over_all_scores[class_num].append(scores[i].to('cpu'))
                 overall_gt[class_num].append(n_class_gt)
                 
