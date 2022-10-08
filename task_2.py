@@ -518,7 +518,9 @@ def plot_graph_2(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
                 # sorting the boxes according to scores:
                 scores = [i.cpu().numpy() for i in scores]
                 scores = np.array(scores)
+                print(scores)
                 indices = np.argsort(scores) # ascending order 
+                print(indices)
                 indices = np.flip(indices)
 
                 boxes = boxes[indices]
