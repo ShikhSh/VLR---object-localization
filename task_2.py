@@ -407,7 +407,7 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
     # TODO (Q2.4): Plot class-wise APs
 
 
-def get_img_plotting_data(model, val_loader=None, thresh=0.05):
+def get_img_plotting_data(model, val_loader=None, thresh=0.2):
     images_to_plot = [2,4,7,9,10]
     images = []
     bounding_boxes = []
