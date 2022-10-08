@@ -191,6 +191,9 @@ def calculate_map(overall_tp, overall_fp, overall_gt):
         # print("recnnnnnnnnnnnnnnnnnnnnnprecisionnnnnnnnnnnnnnnnn")
         # print(recall)
         # print(precision)
+        sorted_indices = np.argsort(mrec)
+        mrec = mrec[sorted_indices]
+        mpre = mpre[sorted_indices]
         ap = sklearn.metrics.auc(mrec, mpre)
         all_ap.append(ap)
 
