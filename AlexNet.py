@@ -50,6 +50,8 @@ class LocalizerAlexNet(nn.Module):
 
     def forward(self, x):
         # TODO (Q1.1): Define forward pass
+        print("input")
+        print(x)
         out = self.features(x)
         print("features")
         print(out)
