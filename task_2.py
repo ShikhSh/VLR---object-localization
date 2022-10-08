@@ -175,18 +175,18 @@ def calculate_map(overall_tp, overall_fp, overall_gt):
         track_tp = np.cumsum(track_tp)
         track_fp = np.cumsum(track_fp)
         n_class_gt = np.cumsum(n_class_gt)
-        tot_gt_boxes = np.sum(n_class_gt)*1.0
+        # tot_gt_boxes = np.sum(n_class_gt)*1.0
 
         n_class_gt[n_class_gt==0] = 1
         sum_ = (track_tp+track_fp)
-        sum_ = np.cumsum(sum_)
+        # sum_ = np.cumsum(sum_)
         sum_[sum_== 0] = 1#to prevent division by zero
         # print("---------------precision and recall-------------------")
         # print(track_tp)
         # print(track_fp)
         # print(n_class_gt)
 
-        recall = 1.0*track_tp/tot_gt_boxes#n_class_gt
+        recall = 1.0*track_tp/n_class_gt#tot_gt_boxes#n_class_gt
         precision = 1.0*track_tp/sum_
         print("---------------precision and recall-------------------")
         print(precision)
@@ -196,11 +196,11 @@ def calculate_map(overall_tp, overall_fp, overall_gt):
         # print("recnnnnnnnnnnnnnnnnnnnnnprecisionnnnnnnnnnnnnnnnn")
         # print(recall)
         # print(precision)
-        sorted_indices = np.argsort(mrec)
-        mrec = mrec[sorted_indices]
-        mpre = mpre[sorted_indices]
-        ap = sklearn.metrics.auc(mrec, mpre)
-        # ap = sum([(mrec[i] - mrec[i-1])*np.max(mpre[i:]) for i in range(1, len(mpre))])
+        # sorted_indices = np.argsort(mrec)
+        # mrec = mrec[sorted_indices]
+        # mpre = mpre[sorted_indices]
+        # ap = sklearn.metrics.auc(mrec, mpre)
+        ap = sum([(recall[i] - recall[i-1])*np.max(precision[i:]) for i in range(1, len(precision))]) # compute AP for the class
         all_ap.append(ap)
 
     assert len(all_ap) == 20
