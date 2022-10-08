@@ -93,7 +93,7 @@ parser.add_argument(
 )
 parser.add_argument(
     '--val-interval',
-    default=5000,
+    default=500,
     type=int,
     help='Interval at which to perform validation'
 )
@@ -403,16 +403,22 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
                 # wandb.log(
                 #     {'train/loss': losses.avg, 'train/Loss': train_loss/step_cnt}
                 # )
-                log_on_wandb({'train/loss': losses.avg, 'train/Loss': train_loss/step_cnt})
+                log_on_wandb({'train/loss': losses.avg})#, 'train/Loss': train_loss/step_cnt})
             if iter % args.val_interval == 0 and iter != 0:
                 model.eval()
                 ap = test_model(model, val_loader)
                 map_ = np.mean(ap)
                 print("AP ", map_)
+                log_on_wandb({'val/mAP': map_})
+                log_on_wandb({'class0/mAP': ap[0]})
+                log_on_wandb({'class1/mAP': ap[1]})
+                log_on_wandb({'class2/mAP': ap[2]})
+                log_on_wandb({'class3/mAP': ap[3]})
+                log_on_wandb({'class4/mAP': ap[4]})
                 model.train()
-                tl = 1.0*train_loss/step_cnt
-                print("TRAINLOSS:::::::::::::::::::::::::::::::::::", str(tl))
-                print("Status=======", str(iter), "/", str())
+                # tl = 1.0*train_loss/step_cnt
+                # print("TRAINLOSS:::::::::::::::::::::::::::::::::::", str(tl))
+                # print("Status=======", str(iter), "/", str())
 
             # TODO (Q2.4): Perform all visualizations here
             # The intervals for different things are defined in the handout
