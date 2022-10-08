@@ -244,13 +244,16 @@ def test_model(model, val_loader=None, thresh=0.05):
                 ious = None
                 if curr_gt_boxes != None:
                     ious = iou(boxes, curr_gt_boxes)
+                    print("here-----------------------iouuuuu------------")
+                    print(boxes)
+                    print(curr_gt_boxes)
 
                 # determine for all the rois if a given roi has a matching gt box or not (required to determine if a given prediction is a TP or FP)
                 for idx in range(len(boxes)):
                     match_found = False
                     if ious is not None:
                         iou_idx_max = ious[idx].argmax()
-                        print("here-----------------------iouuuuu------------")
+                        
                         print(ious[idx])
                         if ious[idx, iou_idx_max] >= 0.5:
                             # found some gt box that matched the prediction, mark it as used since you cannot use it again
