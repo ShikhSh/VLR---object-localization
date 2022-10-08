@@ -134,6 +134,9 @@ def set_up_wandb():
             reinit=True,
             project="vlr_hw1"
         )
+def log_on_wandb(dict_to_log):
+    if USE_WANDB:
+        wandb.log(dict_to_log)
 
 def load_pretained_weights(model):
     alex_net_pretrained = models.alexnet(pretrained = True)
@@ -375,9 +378,10 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
             # TODO (Q2.2): evaluate the model every N iterations (N defined in handout)
             # Add wandb logging wherever necessary
             if step_cnt%500 == 0 and iter>0:
-                wandb.log(
-                    {'train/loss': losses.avg, 'train/Loss': train_loss/step_cnt}
-                )
+                # wandb.log(
+                #     {'train/loss': losses.avg, 'train/Loss': train_loss/step_cnt}
+                # )
+                log_on_wandb({'train/loss': losses.avg, 'train/Loss': train_loss/step_cnt})
             if iter % args.val_interval == 0 and iter != 0:
                 model.eval()
                 ap = test_model(model, val_loader)
@@ -391,13 +395,15 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
             plot_images(model, val_loader)
         aps = test_model(model, val_loader)
         map_ = np.mean(aps)
-        wandb.log(
-            {'Epoch': epoch, 'test/mAP': map_}
-        )
+        log_on_wandb({'Epoch': epoch, 'test/mAP': map_})
+        # wandb.log(
+        #     {'Epoch': epoch, 'test/mAP': map_}
+        # )
         for i in range(0,10,2):
-            wandb.log(
-                {'Epoch': epoch, 'class': i, 'classAP': aps[i]}
-            )
+            log_on_wandb({'Epoch': epoch, 'class': i, 'classAP': aps[i]})
+            # wandb.log(
+            #     {'Epoch': epoch, 'class': i, 'classAP': aps[i]}
+            # )
     # TODO (Q2.4): Plot class-wise APs
 
 
@@ -475,16 +481,17 @@ def plot_images(model, val_loader):
         # tensor_image = image['image']
         original_image = tensor_to_PIL(image)
         # rois = image_2020['rois']
+        if USE_WANDB:
+            unsup_img = wandb.Image(original_image, boxes={
+                "predictions": {
+                    "box_data": get_box_data(class_, rois),
+                    "class_labels": class_id_to_label,
+                },
+            })
 
-        unsup_img = wandb.Image(original_image, boxes={
-            "predictions": {
-                "box_data": get_box_data(class_, rois),
-                "class_labels": class_id_to_label,
-            },
-        })
-
-        # TODO: log the GT bounding box
-        wandb.log({"image{i}": unsup_img})
+            # TODO: log the GT bounding box
+            log_on_wandb({"image{i}": unsup_img})
+            # wandb.log({"image{i}": unsup_img})
 
 def main():
     """
