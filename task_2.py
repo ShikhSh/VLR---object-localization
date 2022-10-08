@@ -516,14 +516,14 @@ def plot_graph_2(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
                 # print(class_gt_boxes)
 
                 # sorting the boxes according to scores:
-                scores = [i.cpu().numpy() for i in scores]
-                scores = np.array(scores)
-                print(scores)
-                indices = np.argsort(scores) # ascending order 
-                print(indices)
-                indices = np.flip(indices)
-                print(type(boxes))
-                boxes = boxes[indices]
+                # scores = [i.cpu().numpy() for i in scores]
+                # scores = np.array(scores)
+                # print(scores)
+                # indices = np.argsort(scores) # ascending order 
+                # print(indices)
+                # indices = np.flip(indices)
+                # print(type(boxes))
+                # boxes = boxes[indices]
 
                 iou_values = None
                 if len(class_gt_boxes) > 0:
