@@ -77,8 +77,8 @@ def nms(bounding_boxes, confidence_score, threshold=0.05, iou_threshold = 0.3):
         #     if iou_score > iou_threshold:
         #         b_boxes = torch.cat((b_boxes[0:i], b_boxes[i+1:len(b_boxes)]))
         #         conf_sc = torch.cat((conf_sc[0:i], conf_sc[i+1:len(conf_sc)]))
-    if boxes.shape[0]>1:
-        print("PRINTING BOXESSS:::::::::::::::::::::", str(boxes.shape))
+    # if boxes.shape[0]>1:
+    #     print("PRINTING BOXESSS:::::::::::::::::::::", str(boxes.shape))
     return boxes, scores
 
 

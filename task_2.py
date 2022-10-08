@@ -231,8 +231,8 @@ def test_model(model, val_loader=None, thresh=0.05):
             rois = data['rois']
             gt_boxes = data['gt_boxes']
             gt_class_list = data['gt_classes']
-            print("IamprintingGTclasses", str(iter))
-            print(gt_class_list)
+            # print("IamprintingGTclasses", str(iter))
+            # print(gt_class_list)
             image = image.to(device)
             target = target.to(device)
             # wgt = wgt.to(device)
@@ -258,7 +258,7 @@ def test_model(model, val_loader=None, thresh=0.05):
             
             for class_num in range(20):
                 # get valid rois and cls_scores based on thresh
-                print("Looking for class",str(class_num), " = ", str(iter))
+                # print("Looking for class",str(class_num), " = ", str(iter))
                 tp = 0
                 fp = 0
                 # track_tp = []
@@ -293,7 +293,7 @@ def test_model(model, val_loader=None, thresh=0.05):
                     continue
 
                 # now calculate the iou for all the boxes and 
-                print("here-----------------------iouuuuu------------")
+                # print("here-----------------------iouuuuu------------")
                 # print(boxes)
                 # print(class_gt_boxes)
                 iou_values = iou(boxes, class_gt_boxes)
@@ -308,10 +308,10 @@ def test_model(model, val_loader=None, thresh=0.05):
                     if iou_values[i, max_ios_pos] >= thresh:
                         iou_values[:, max_ios_pos] = -1 #since it should not be used again
                         tp+=1
-                        print("TP-----------------------")
+                        # print("TP-----------------------")
                     else:
                         fp+=1
-                        print("FP-----------------------")
+                        # print("FP-----------------------")
                 overall_tp[class_num].append(tp)
                 overall_fp[class_num].append(fp)
                 overall_gt[class_num].append(n_class_gt)
