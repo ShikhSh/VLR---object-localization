@@ -179,7 +179,8 @@ def calculate_map(overall_tp, overall_fp, overall_gt):
 
         n_class_gt[n_class_gt==0] = 1
         sum_ = (track_tp+track_fp)
-        sum_[sum_== 0] = 1
+        sum_ = np.cumsum(sum_)
+        sum_[sum_== 0] = 1#to prevent division by zero
         # print("---------------precision and recall-------------------")
         # print(track_tp)
         # print(track_fp)
