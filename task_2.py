@@ -172,9 +172,9 @@ def calculate_map(overall_tp, overall_fp, overall_gt):
     for i in range(20):
         track_tp, track_fp, n_class_gt = overall_tp[i], overall_fp[i], overall_gt[i]
         track_tp, track_fp, n_class_gt = np.array(track_tp), np.array(track_fp), np.array(n_class_gt)
-        track_tp = np.cumsum(track_tp)
-        track_fp = np.cumsum(track_fp)
-        n_class_gt = np.cumsum(n_class_gt)
+        # track_tp = np.cumsum(track_tp)
+        # track_fp = np.cumsum(track_fp)
+        # n_class_gt = np.cumsum(n_class_gt)
 
         n_class_gt[n_class_gt==0] = 1
         sum_ = (track_tp+track_fp)
@@ -407,7 +407,7 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
     # TODO (Q2.4): Plot class-wise APs
 
 
-def get_img_plotting_data(model, val_loader=None, thresh=0.2):
+def get_img_plotting_data(model, val_loader=None, thresh=0.05):
     images_to_plot = [2,4,7,9,10]
     images = []
     bounding_boxes = []
