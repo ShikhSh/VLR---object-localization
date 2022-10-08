@@ -51,6 +51,8 @@ class LocalizerAlexNet(nn.Module):
     def forward(self, x):
         # TODO (Q1.1): Define forward pass
         out = self.features(x)
+        print("features")
+        print(out)
         out = self.classifier(out)
         print("in alex netttttttt")
         print(out)
