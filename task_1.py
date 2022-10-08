@@ -365,7 +365,7 @@ def validate(val_dataset, val_loader, model, criterion, epoch=0):
         imoutput = model(images)
 
         # TODO (Q1.1): Perform any necessary functions on the output
-        imoutput = torch.max(imoutput, dim = 2)[0].max(2)[0]
+        # imoutput = torch.max(imoutput, dim = 2)[0].max(2)[0]
         # TODO (Q1.1): Compute loss using ``criterion``
         loss = criterion(imoutput, target).sum()
 
