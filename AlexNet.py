@@ -1,12 +1,50 @@
 import torch.nn as nn
 import torchvision.models as models
 import torch
-
+import pickle as pkl
+import torch.utils.model_zoo as model_zoo
+from torch.nn.parameter import Parameter
+import os
 
 model_urls = {
     'alexnet': 'https://download.pytorch.org/models/alexnet-owt-4df8aa71.pth',
 }
 
+def load_pretrained_model(model):
+    names = {"features.0.weight",
+    "features.0.bias",
+    "features.3.weight",
+    "features.3.bias",
+    "features.6.weight",
+    "features.6.bias",
+    "features.8.weight",
+    "features.8.bias",
+    "features.10.weight",
+    "features.10.bias"}
+
+    if os.path.exists('pretrained_alexnet.pkl'):
+        pret_net = pkl.load(open('pretrained_alexnet.pkl', 'rb'))
+    else:
+        pret_net = model_zoo.load_url(
+            'https://download.pytorch.org/models/alexnet-owt-4df8aa71.pth')
+        pkl.dump(pret_net,
+        open('pretrained_alexnet.pkl', 'wb'), pkl.HIGHEST_PROTOCOL)
+    own_state = model.state_dict()
+
+    for name, param in pret_net.items():
+        
+        if name not in own_state:
+            print(name)
+            continue
+        if isinstance(param, Parameter):
+            param = param.data
+        if name in names:
+            try:
+                own_state[name].copy_(param)
+                # print('Copied {}'.format(name))
+            except:
+                print('Did not find {}'.format(name))
+                continue
 
 class LocalizerAlexNet(nn.Module):
     def __init__(self, num_classes=20):
@@ -121,10 +159,10 @@ def localizer_alexnet(pretrained=False, **kwargs):
     model = LocalizerAlexNet(**kwargs)
     # TODO (Q1.3): Initialize weights based on whether it is pretrained or not
     if pretrained:
-        alex_net_pretrained = models.alexnet(pretrained = True)
-        for i in [0, 3, 6, 8, 10]:
-            model.features[i].load_state_dict(alex_net_pretrained.features[i].state_dict())
-
+        # alex_net_pretrained = models.alexnet(pretrained = True)
+        # for i in [0, 3, 6, 8, 10]:
+        #     model.features[i].load_state_dict(alex_net_pretrained.features[i].state_dict())
+        load_pretrained_model(model)
     return model
 
 
@@ -138,8 +176,8 @@ def localizer_alexnet_robust(pretrained=False, **kwargs):
     # TODO (Q1.7): Initialize weights based on whether it is pretrained or not
     
     if pretrained:
-        alex_net_pretrained = models.alexnet(pretrained = True)
-        for i in [0, 3, 6, 8, 10]:
-            model.features[i].load_state_dict(alex_net_pretrained.features[i].state_dict())
-    
+        # alex_net_pretrained = models.alexnet(pretrained = True)
+        # for i in [0, 3, 6, 8, 10]:
+        #     model.features[i].load_state_dict(alex_net_pretrained.features[i].state_dict())
+        load_pretrained_model(model)
     return model
