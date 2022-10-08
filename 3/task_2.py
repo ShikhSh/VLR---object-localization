@@ -245,8 +245,8 @@ def test_model(model, val_loader=None, thresh=0.05):
                 if curr_gt_boxes != None:
                     ious = iou(boxes, curr_gt_boxes)
                     print("here-----------------------iouuuuu------------")
-                    print(boxes)
-                    print(curr_gt_boxes)
+                    # print(boxes)
+                    # print(curr_gt_boxes)
 
                 # determine for all the rois if a given roi has a matching gt box or not (required to determine if a given prediction is a TP or FP)
                 for idx in range(len(boxes)):
