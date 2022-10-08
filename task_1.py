@@ -496,11 +496,13 @@ def plot_img_and_heatplot(dataset, model, epoch):
         print("in plotting")
         print(img_features.shape)
         print(image.shape[1:])
-        img_features = F.interpolate(img_features, size=image.shape[1:], mode="bilinear")#.squeeze() # perform bilinear interpolation of the feature map and resize it to input image size
+        img_features = F.interpolate(img_features, size=512, mode="bilinear").squeeze() # perform bilinear interpolation of the feature map and resize it to input image size
         print(img_features.shape)
         # feature_map = (feature_map-torch.min(feature_map))/(torch.max(feature_map) - torch.min(feature_map))
         img_features = torch.sigmoid(img_features)
+        print(img_features.shape)
         img_features = img_features.squeeze().detach().cpu().numpy()
+        print(img_features.shape)
         cmap = plt.get_cmap('jet')
         img_features = cmap(img_features)
         feat_img = wandb.Image(img_features)
