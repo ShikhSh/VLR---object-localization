@@ -391,11 +391,12 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
                 map_ = np.mean(ap)
                 print("AP ", map_)
                 model.train()
+                tl = 1.0*train_loss/step_cnt
+                print("TRAINLOSS:::::::::::::::::::::::::::::::::::", str(tl))
 
             # TODO (Q2.4): Perform all visualizations here
             # The intervals for different things are defined in the handout
-        tl = 1.0*train_loss/step_cnt
-        print("TRAINLOSS:::::::::::::::::::::::::::::::::::", str(tl))
+        
         if epoch == 0 or epoch == args.epochs-1:
             plot_images(model, val_loader)
         aps = test_model(model, val_loader)
