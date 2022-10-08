@@ -240,7 +240,7 @@ def main():
 
         # evaluate on validation set
         if epoch % args.eval_freq == 0 or epoch == args.epochs - 1:
-            m1, m2 = validate(val_loader, model, criterion, epoch)
+            m1, m2 = validate(val_dataset, val_loader, model, criterion, epoch)
 
             score = m1 * m2
             # remember best prec@1 and save checkpoint
@@ -271,6 +271,7 @@ def train(train_dataset, train_loader, model, criterion, optimizer, epoch):
         # measure data loading time
         # images = data[0]
         # target = data[1]
+        data_time.update(time.time() - end)
         images = data['image']
         target = data['label']
 
