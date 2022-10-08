@@ -196,9 +196,9 @@ def calculate_map(overall_tp, overall_fp, overall_gt, over_all_scores):
 
         recall = 1.0*track_tp/tot_gt_boxes#n_class_gt#tot_gt_boxes#n_class_gt
         precision = 1.0*track_tp/sum_
-        print("---------------precision and recall-------------------")
-        print(precision)
-        print(recall)
+        # print("---------------precision and recall-------------------")
+        # print(precision)
+        # print(recall)
         mrec = np.concatenate(([0.], recall, [1.]))
         mpre = np.concatenate(([0.], precision, [0.]))
         # print("recnnnnnnnnnnnnnnnnnnnnnprecisionnnnnnnnnnnnnnnnn")
@@ -209,7 +209,8 @@ def calculate_map(overall_tp, overall_fp, overall_gt, over_all_scores):
         # mpre = mpre[sorted_indices]
         # ap1 = sklearn.metrics.auc(mrec, mpre)
         ap = sum([(mrec[i] - mrec[i-1])*np.max(mpre[i:]) for i in range(1, len(mpre))]) # compute AP for the class
-        print("APssssssssssssss:::::::::::::::", str(ap))#, str(ap1), " , ", str(ap))
+        print("AP class-wise: ")
+        print( str(ap))#, str(ap1), " , ", str(ap))
         all_ap.append(ap)
 
     assert len(all_ap) == 20
@@ -336,15 +337,15 @@ def test_model(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
                 # TODO (Q2.3): visualize bounding box predictions when required
                 # map_ = calculate_map(track_tp, track_fp, n_class_gt)
                 # class_aps.append(map_)
-            if iter >= 1000:
-                plot_graph_2(model, val_loader)
-                break
+            # if iter >= 1000:
+            #     plot_graph_2(model, val_loader)
+            #     break
 
     print("====================================================================================class APs: ")
     print(overall_tp)
     print(overall_fp)
     all_aps = calculate_map(overall_tp, overall_fp, overall_gt, over_all_scores)
-    print(all_aps)
+    # print(all_aps)
     return all_aps
 
 
@@ -408,7 +409,9 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
                 model.eval()
                 ap = test_model(model, val_loader)
                 map_ = np.mean(ap)
-                print("AP ", map_)
+                print("Class-wise APs: ")
+                print(ap)
+                print("AP ", str(map_))
                 log_on_wandb({'val/mAP': map_})
                 log_on_wandb({'class0/mAP': ap[0]})
                 log_on_wandb({'class1/mAP': ap[1]})
@@ -424,7 +427,9 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
             # The intervals for different things are defined in the handout
         
         if epoch == 0 or epoch == args.epochs-1:
+            model.eval()
             plot_images(model, val_loader)
+            model.train()
         aps = test_model(model, val_loader)
         map_ = np.mean(aps)
         log_on_wandb({'Epoch': epoch, 'test/mAP': map_})
