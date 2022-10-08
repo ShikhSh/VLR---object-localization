@@ -66,7 +66,7 @@ parser.add_argument(
 parser.add_argument(
     '--lr',
     '--learning-rate',
-    default=0.1,
+    default=0.01,
     type=float,
     metavar='LR',
     help='initial learning rate')
@@ -156,7 +156,7 @@ def main():
 
     # TODO (Q1.1): define loss function (criterion) and optimizer from [1]
     # also use an LR scheduler to decay LR by 10 every 30 epochs
-    criterion = nn.BCEWithLogitsLoss().to(device)
+    criterion = nn.BCEWithLogitsLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr = args.lr, momentum = args.momentum, weight_decay = args.weightDecay, nesterov = True)
     # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size = 10, gamma = 0.1)
 
