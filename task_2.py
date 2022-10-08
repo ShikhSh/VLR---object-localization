@@ -141,7 +141,7 @@ def load_pretained_weights(model):
         model.features[i].load_state_dict(alex_net_pretrained.features[i].state_dict())
     return model
 
-def calculate_map(track_tp, track_fp, n_class_gt):
+def calculate_map(overall_tp, overall_fp, overall_gt):
     """
     Calculate the mAP for classification.
     """
@@ -165,16 +165,23 @@ def calculate_map(track_tp, track_fp, n_class_gt):
     # calculate the precision and recall
     # now calc area under precision-recall curve using sklearn
     # this is ap(Avg Precision), do that for all, get map
-    track_tp, track_fp, n_class_gt = np.array(track_tp), np.array(track_fp), np.array(n_class_gt)
-    recall = 1.0*track_tp/n_class_gt
-    sum_ = (track_tp+track_fp)
-    sum_[sum_==0] = 1
-    precision = 1.0*track_tp/sum_
-    print("recnnnnnnnnnnnnnnnnnnnnnprecisionnnnnnnnnnnnnnnnn")
-    print(recall)
-    print(precision)
-    map = sklearn.metrics.auc(recall, precision)
-    return map
+    all_ap = []
+    for i in range(20):
+        track_tp, track_fp, n_class_gt = overall_tp[i], overall_fp[i], overall_gt[i]
+        track_tp, track_fp, n_class_gt = np.array(track_tp), np.array(track_fp), np.array(n_class_gt)
+        recall = 1.0*track_tp/n_class_gt
+        sum_ = (track_tp+track_fp)
+        sum_[sum_==0] = 1
+        precision = 1.0*track_tp/sum_
+
+        mrec = np.concatenate(([0.], recall, [1.]))
+        mpre = np.concatenate(([0.], precision, [0.]))
+        # print("recnnnnnnnnnnnnnnnnnnnnnprecisionnnnnnnnnnnnnnnnn")
+        # print(recall)
+        # print(precision)
+        ap = sklearn.metrics.auc(mrec, mpre)
+        all_ap.append(ap)
+    return all_ap
 
 
 def test_model(model, val_loader=None, thresh=0.05):
@@ -182,7 +189,13 @@ def test_model(model, val_loader=None, thresh=0.05):
     Tests the networks and visualizes the detections
     :param thresh: Confidence threshold
     """
-    class_aps = []
+    # class_aps = []
+    overall_tp = {}
+    overall_fp = {}
+    overall_gt = {}
+    for i in range(20):
+        overall_tp[i] = []
+        overall_fp[i] = []
     with torch.no_grad():
         for iter, data in enumerate(val_loader):
 
@@ -223,8 +236,8 @@ def test_model(model, val_loader=None, thresh=0.05):
                 print("Looking for class",str(class_num))
                 tp = 0
                 fp = 0
-                track_tp = []
-                track_fp = []
+                # track_tp = []
+                # track_fp = []
                 class_gt_indices = torch.where(gt_class_list == class_num)
                 class_gt_boxes = gt_boxes[class_gt_indices]
                 n_class_gt = len(class_gt_boxes)
@@ -238,23 +251,24 @@ def test_model(model, val_loader=None, thresh=0.05):
                 if len(boxes) == 0:
                     # we need not keep a count of false negatives otherwise this would have come here
                     # class_aps.append(0)
-                    track_tp.append(tp)
-                    track_fp.append(fp)
+                    overall_tp[i].append(tp)
+                    overall_fp[i].append(fp)
+                    overall_gt[i].append(n_class_gt)
                     print("EXITING1")
                     continue
                 
-                if len(class_gt_boxes) == 0:
-                    # there are no gt boxes for this, thus we need not do anything about it
-                    # fp += len(boxes)
-                    # class_aps.append(0)
-                    track_tp.append(tp)
-                    track_fp.append(fp)
-                    print("EXITING2")
-                    continue
+                # if len(class_gt_boxes) == 0:
+                #     # there are no gt boxes for this, thus we need not do anything about it
+                #     fp += len(boxes)
+                #     # class_aps.append(0)
+                #     overall_tp[i].append(tp)
+                #     overall_fp[i].append(fp)
+                #     print("EXITING2")
+                #     continue
 
                 # now calculate the iou for all the boxes and 
                 iou_values = iou(boxes, class_gt_boxes)
-                print("here")
+                print("here", str(len(boxes)))
                 for i in range(len(boxes)):
                     # find the best gt_box for an iou
                     max_ios_pos = iou_values[i].argmax()
@@ -266,8 +280,9 @@ def test_model(model, val_loader=None, thresh=0.05):
                     else:
                         fp+=1
                         print("FP-----------------------")
-                    track_tp.append(tp)
-                    track_fp.append(fp)
+                    overall_tp[i].append(tp)
+                    overall_fp[i].append(fp)
+                    overall_gt[i].append(i)
                 
                 # TODO (Q2.3): visualize bounding box predictions when required
                 # map_ = calculate_map(track_tp, track_fp, n_class_gt)
@@ -275,7 +290,9 @@ def test_model(model, val_loader=None, thresh=0.05):
             # break
 
     print("====================================================================================class APs: ")
-    print(class_aps)
+    print(overall_tp)
+    print(overall_fp)
+    map_ = calculate_map(overall_tp, overall_fp, overall_gt)
     return class_aps
 
 
