@@ -274,7 +274,7 @@ def test_model(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
                 class_gt_indices = torch.where(gt_class_list == class_num)
                 class_gt_boxes = gt_boxes[class_gt_indices]
                 n_class_gt = len(class_gt_boxes)
-
+                overall_gt[class_num].append(n_class_gt)
                 # trial = torch.where(imoutput[:, class_num]>thresh)
                 # if len(trial)>0:
                     # print("hurra")
@@ -284,8 +284,8 @@ def test_model(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
                 if len(boxes) == 0:
                     # we need not keep a count of false negatives otherwise this would have come here
                     # class_aps.append(0)
-                    # overall_tp[class_num].append(tp)
-                    # overall_fp[class_num].append(fp)
+                    # overall_tp[class_num].append(0)
+                    # overall_fp[class_num].append()
                     # overall_gt[class_num].append(n_class_gt)
                     # print("EXITING1")
                     continue
@@ -331,7 +331,6 @@ def test_model(model, val_loader=None, thresh=0.05, iou_threshold = 0.3):
                     # print("debug pritngin")
                     # print(scores[i])
                     over_all_scores[class_num].append(scores[i].to('cpu'))
-                overall_gt[class_num].append(n_class_gt)
                 
                 # TODO (Q2.3): visualize bounding box predictions when required
                 # map_ = calculate_map(track_tp, track_fp, n_class_gt)
