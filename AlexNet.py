@@ -148,7 +148,7 @@ class LocalizerAlexNetRobust(nn.Module):
         out = self.classifier(out)
         print(out.shape)
         out = torch.mean(out, dim = 2)
-        out = torch.mean(out, dim = 2)[0]
+        out = torch.mean(out, dim = 2)
         print(out.shape)
         return out
 
