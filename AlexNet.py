@@ -146,10 +146,10 @@ class LocalizerAlexNetRobust(nn.Module):
 
         out = self.features(x)
         out = self.classifier(out)
-        print(out.shape)
+        # print(out.shape)
         out = torch.mean(out, dim = 2)
         out = torch.mean(out, dim = 2)
-        print(out.shape)
+        # print(out.shape)
         return out
 
 
