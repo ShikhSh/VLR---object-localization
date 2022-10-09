@@ -162,9 +162,9 @@ def calculate_map(num_gt_boxes, boxes_match_score):
             recalls.append(recall)
         precisions.append(0.0)
         recalls.append(1.0) # at the end, append 0 precision and 1 recall, to account for the other end of precision-recall curve
-        print("---------------precision and recall-------------------")
-        print(precisions)
-        print(recalls)
+        # print("---------------precision and recall-------------------")
+        # print(precisions)
+        # print(recalls)
         ap = sum([(recalls[i] - recalls[i-1])*np.max(precisions[i:]) for i in range(1, len(precisions))]) # compute AP for the class
 
         AP[class_num] = ap
@@ -206,8 +206,8 @@ def test_model(model, val_loader=None, thresh=0.05):
             rois = torch.stack([torch.as_tensor(x) for x in data['rois']], dim=0)
             gt_boxes = torch.stack([torch.as_tensor(x) for x in data['gt_boxes']], dim=0).squeeze(dim=0)
             gt_class_list = torch.stack([torch.as_tensor(x) for x in data['gt_classes']], dim=0).squeeze(dim=0)
-            print("IamprintingGTclasses", str(iter))
-            print(gt_class_list)
+            # print("IamprintingGTclasses", str(iter))
+            # print(gt_class_list)
             # TODO (Q2.3): perform forward pass, compute cls_probs
             cls_scores = model(image.cuda(), rois*img_size, target.cuda())
             # print("output")
@@ -216,7 +216,7 @@ def test_model(model, val_loader=None, thresh=0.05):
             # TODO (Q2.3): Iterate over each class (follow comments)
             for class_num in range(20):
                 # get valid rois and cls_scores
-                print("Looking for class",str(class_num), " = ", str(iter))
+                # print("Looking for class",str(class_num), " = ", str(iter))
                 scores = cls_scores[:, class_num]
                 boxes = rois.squeeze()[:,:]
 
@@ -247,7 +247,7 @@ def test_model(model, val_loader=None, thresh=0.05):
                 ious = None
                 if curr_gt_boxes != None:
                     ious = iou(boxes, curr_gt_boxes)
-                    print("here-----------------------iouuuuu------------")
+                    # print("here-----------------------iouuuuu------------")
                     # print(boxes)
                     # print(curr_gt_boxes)
 
@@ -257,16 +257,16 @@ def test_model(model, val_loader=None, thresh=0.05):
                     if ious is not None:
                         iou_idx_max = ious[idx].argmax()
                         
-                        print(ious[idx])
+                        # print(ious[idx])
                         if ious[idx, iou_idx_max] >= 0.5:
                             # found some gt box that matched the prediction, mark it as used since you cannot use it again
                             ious[:, iou_idx_max] = 0
                             match_found = True
                     boxes_match_score[class_num].append({'match':match_found, 'score':scores[idx].item()})
-                    if match_found:
-                        print("TP-----------------------")
-                    else:
-                        print("FP-----------------------")
+                    # if match_found:
+                    #     print("TP-----------------------")
+                    # else:
+                    #     print("FP-----------------------")
                 # print("MATCHING-----------------------")
                 # print(match_found)
 
@@ -415,7 +415,7 @@ def train_model(model, train_loader=None, val_loader=None, optimizer=None, args=
             torch.save(model.state_dict(), f)
 
         if args.use_wandb:
-            box_plots(val_dataset=val_dataset, indices=[0,1,2,3], model=model, epoch=epoch)
+            box_plots(val_dataset=val_dataset, indices=[12,14,16,18,20,21,22,23,24,25], model=model, epoch=epoch)
 
 
 def main():
